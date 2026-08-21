@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Obsidian Architect | Add Classes</title>
+    <link rel="icon" type="image/png" href="photos/websitelogo.png">
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+     
+    </head>
+    <body>
+
+        <nav class="navbar">
+            <div class="logo"><a href="index.html">Obsidian Architect</a></div>
+            
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li class="active"><a href="add class.html">Add Class</a></li>
+                <li><a href="classes.html">My Classes</a></li>
+                <li><a href="contact us.html">Contact us</a></li>
+            </ul>
+            <div class="nav-icons">
+                <span class="bell-icon">🔔</span>
+                <div class="profile-pic">
+                    <img src="photos/avatar.png" alt="Profile Picture">
+                </div>
+            </div>
+        </nav>
+        
+        <div style="padding-left: 3%;">
+            <div class="terminal-boot"><h1 class="big-text">Add a Class</h1></div>
+            <div class="small-line" style="margin-bottom: 3%;"></div>
+            <label>Define the parameters for a new academic node. These entries will be indexed into your primary study terminal.</label>
+        </div>
+        <div id="class-confirmation-message" class="confirmation-message"></div>
+        <div class="form-container">
+            
+            <div>
+                <h3>CLASS TITLE</h3>
+                <input id="class-title" class="class-input" type="text" placeholder="e.g., Advanced Distributed Systems">
+            </div>
+            <div class="row">
+                <div>
+                    <h3>CLASS CODE</h3>
+                    <input id="class-code" class="class-input" type="text" placeholder="CS-402">
+                </div>
+                <div>
+                    <h3>CLASS INSTRUCTOR</h3>
+                    <input id="class-instructor" class="class-input" type="text" placeholder="Dr. Amr Ghonim">
+                </div>
+            </div>
+            <div>
+                <h3>CLASS DATE</h3>
+                <input id="class-date" class="class-input" type="text" placeholder="Mon, 14:00 - 15:30">
+            </div>
+            <div id="class-error-message" class="error-message"></div>
+            <div class="btn-container">
+                <button id="add-class-btn" class="add-class-btn">Add Class</button>
+                <button id="discard-btn" class="discard-btn">Discard Draft</button>
+            </div>
+            
+        </div>
+        <h1 style="margin-left: 3%;">Add a Task</h1>
+        <div id="task-confirmation-message" class="confirmation-message"></div>
+        <div class="form-container">
+            
+            <div>
+                <div>
+                <h3>TASK TITLE</h3>
+                <input id="task-title" class="class-input" type="text" placeholder="e.g., Implement a new feature">
+                </div>
+            </div>
+            <div class="row">
+                <div>
+                    <h3>TASK DUE DATE</h3>
+                    <input id="task-due-date" class="class-input" type="text" placeholder="Mon, 14:00 - 15:30">
+                </div>
+                <div>
+                    <h3>TASK DESCRIPTION</h3>
+                    <input id="task-description" class="class-input" type="text" placeholder="Implement a new feature in the project">
+                </div>
+            </div>
+            <div id="task-error-message" class="error-message"></div>
+            <div class="btn-container">
+                <button id="add-task-btn" class="add-class-btn">Add Task</button>
+                <button id="discard-task-btn" class="discard-btn">Discard Draft</button>
+            </div>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p class="copyright">© 2026 OBSIDIAN ARCHITECT TERMINAL. BUILT FOR DEEP FOCUS.</p>
+
+                <div class="footer-links">
+                    <p>DOCUMENTATION</p>
+                    <p>SYSTEM STATUS</p>
+                    <p>PRIVACY POLICY</p>
+                </div>
+            </div>
+        </footer>
+        <script src="website.js" defer></script>
+    </body>
+</html>

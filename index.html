@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Obsidian Architect | Home</title>
+        <link rel="icon" type="image/png" href="photos/websitelogo.png">
+        <link rel="stylesheet" href="style.css">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    </head>
+    <body>
+
+        <nav class="navbar">
+            <div class="logo">
+                <a href="index.html">Obsidian Architect</a>
+            </div>
+            
+            <ul class="nav-links">
+                <li class="active"><a href="index.html">Home</a></li>
+                <li><a href="add class.html">Add Class</a></li>
+                <li><a href="classes.html">My Classes</a></li>
+                <li><a href="contact us.html">Contact us</a></li>
+            </ul>
+            <div class="nav-icons">
+                <span class="bell-icon">🔔</span>
+                <div class="profile-pic">
+                    <img src="photos/avatar.png" alt="Profile Picture">
+                </div>
+            </div>
+        </nav>
+
+        <div style="display: flex;">
+            <div style="padding-left: 3%;">
+                <div class="terminal-boot">
+                    <h1 class="big-header">Welcome back Architect.</h1>
+                </div>
+            </div>
+            <!-- <h1 id="live-date-display" style="margin: 3rem 0 0 39%;"></h1> -->
+        </div>
+        
+        <div class="block-container" style="padding-left:3%;">
+            <div class="sub-block"> 
+                <p>CLASSES TODAY</p>
+                <h1 id="today-classes-counter" style="font-size: 48px; width: 325px; color:#DAB9FF;"></h1>
+            </div>
+            <div class="sub-block">    
+                <p>TASKS TODAY</p>
+                <h1 id="today-tasks-counter" style="font-size: 48px; width: 325px;"></h1>
+            </div>
+            <div class="sub-block">    
+                <p>TASKS DUE THIS WEEK</p>
+                <h1 id="this-week-tasks-counter" style="font-size: 48px; width: 325px; color: #D4CA38;"></h1>
+            </div>
+        </div>
+
+        <div class="dashboard" style="padding-left: 3%; padding-right: 3%;">
+           
+            <section class="schedule-section" style="display: block; ">
+                <div style="display: flex; padding-top: 2%;">
+                    <h1>Today's Schedule</h1> 
+                    <p id="schedule-date" style="padding-top: 2%; margin-left: 52%; opacity: 0.7; color: #71717A;"></p>
+                </div>
+                <div class="timeline" id="dashboard-timeline">
+                    <div class="timeline-item" id="dashboard-schedule">
+                        <div class="dot active"></div>
+                        <div class="card highlighted">
+                            <span class="time"></span>
+                            <h1></h1>
+                            <p style="opacity: 0.5; margin-top: -6px ;"></p>
+                        </div>
+                    </div>
+                        
+                    <div class="timeline-item">
+                        <div class="dot"></div>
+                        <div class="card">
+                            <span class="time"></span>
+                            <h1></h1>
+                            <p style="opacity: 0.5; margin-top: -6px ;"></p>
+                        </div>
+                    </div>
+                
+                    <div class="timeline-item">
+                        <div class="dot"></div>
+                        <div class="card">
+                            <span class="time"></span>
+                            <h1></h1>
+                            <p style="opacity: 0.5; margin-top: -6px ;"></p>
+                        </div>
+                    </div> 
+                </div>
+            </section>
+            
+            <section class="tasks">
+                <div class="tasks-header">
+                    <h1>Priority Tasks</h1>
+                    <span id="view-all-tasks" class="view-all-tasks" style="cursor: pointer;">VIEW ALL</span>
+                </div>
+                <div class="task-list" id="dashboard-tasks" style="padding-top: 3%;">
+                    <div class="smallcard">
+                        <h3></h3>
+                        <p style="opacity: 0.5; padding-top: 2%;"></p>
+                    </div>  
+                    
+                    <div class="smallcard">
+                        <h3></h3>
+                        <p style="opacity: 0.5;padding-top: 2%;"></p>
+                    </div>  
+                    <div class="smallcard">
+                        <h3></h3>
+                        <p style="opacity: 0.5;padding-top: 2%;"></p>
+                    </div>
+                    <div class="smallcard">
+                        <h3></h3>
+                        <p style="opacity: 0.5;padding-top: 2%;"></p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <footer>
+            <div class="footer-content">
+                <p class="copyright">© 2026 OBSIDIAN ARCHITECT TERMINAL. BUILT FOR DEEP FOCUS.</p>
+
+                <div class="footer-links">
+                    <p>DOCUMENTATION</p>
+                    <p>SYSTEM STATUS</p>
+                    <p>PRIVACY POLICY</p>
+                </div>
+            </div>
+        </footer>
+        <script src="website.js"></script>
+    </body>
+</html>
