@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-    const dateDisplayContainer = document.getElementById('live-date-display');
     const scheduleDateDisplay = document.getElementById('schedule-date');
 
     function parseClassTime(scheduleString) {
@@ -67,8 +66,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateDateDisplay() {
         const time = getCurrentTimeSnapshot();
         const formattedDate = `${time.dayName}, ${time.monthName} ${time.numericDay}`;
-        
-        if (dateDisplayContainer) dateDisplayContainer.textContent = formattedDate;
         if (scheduleDateDisplay) scheduleDateDisplay.textContent = formattedDate;
     }
 
@@ -278,8 +275,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="timeline-item">
                     <div class="dot"></div>
                     <div class="card">
-                        <h1>No Upcoming Classes Today</h1>
-                        <p style="opacity: 0.5;">Your schedule is clear for the rest of the day.</p>
+                        <h1 style="font-size: 1.25rem; margin: 0;">No Upcoming Classes Today</h1>
+                        <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">Your schedule is clear for the rest of the day.</p>
                     </div>
                 </div>`;
             return;
@@ -296,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="${dotClass}"></div>
                 <div class="${cardClass}">
                     <span class="time">${classItem.parsed.startTime} - ${classItem.parsed.endTime}</span>
-                    <h1>${classItem.title} ${classItem.code ? `(${classItem.code})` : ''}</h1>
+                    <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${classItem.title} ${classItem.code ? `(${classItem.code})` : ''}</h1>
                 </div>
             `;
             timelineContainer.appendChild(itemDiv);
@@ -313,8 +310,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentTasks.length === 0) {
             tasksContainer.innerHTML = `
                 <div class="smallcard">
-                    <h3>No Priority Tasks</h3>
-                    <p style="opacity: 0.5;">All task queues cleared.</p>
+                    <h3 style="margin: 0;">No Priority Tasks</h3>
+                    <p style="opacity: 0.5; margin: 0; font-size: 0.85rem;">All task queues cleared.</p>
                 </div>`;
             return;
         }
@@ -324,8 +321,8 @@ document.addEventListener('DOMContentLoaded', () => {
             cardDiv.className = 'smallcard';
             cardDiv.innerHTML = `
                 <div>
-                    <h3>${taskItem.title}</h3>
-                    <p style="opacity: 0.5; font-size: 0.85rem; margin-top: 4px;">${taskItem.description || 'No description'}</p>
+                    <h3 style="margin: 0; font-size: 1rem;">${taskItem.title}</h3>
+                    <p style="opacity: 0.5; font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">${taskItem.description || 'No description'}</p>
                 </div>
                 <span style="font-size: 0.85rem; color: #DAB9FF; font-weight: 600;">${taskItem.date || ''}</span>
             `;
