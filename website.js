@@ -669,7 +669,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Contact Form Submission (Google Apps Script Integration)
     const contactForm = document.getElementById('contact-form');
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzst-UaA84p1nlLgVR6OUXOpIeLpQ0qxKfoZDnjls8yMGc6r6UvumqcrRL3CLvN1Dws/exec';
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvLaO5PYjxFXdOeGEpXsjeCEwL8IaIzbUOiMudLZct5ZE1JB3nItqFe59wXekYgrZS/exec';
 
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
