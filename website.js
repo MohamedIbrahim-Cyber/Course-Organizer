@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function parseClassTime(scheduleString) {
         if (!scheduleString || !scheduleString.includes(', ')) {
-            return { day: '', startTime: '', endTime: '', totalMinutes: 0 };
+            return { day: 'Mon', startTime: '', endTime: '', totalMinutes: 0 };
         }
         const [dayPart, timeRange] = scheduleString.split(', ');
         const [startTime, endTime] = (timeRange || '').split('-');
@@ -344,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // Classes & Tasks Page Management (classes.html)
+    // Classes & Tasks Hub (classes.html) Dynamic Management & In-Place Editing
     // =========================================================================
     const classesListContainer = document.getElementById('classes-list');
     const tasksListContainer = document.getElementById('tasks-list');
@@ -394,6 +394,7 @@ document.addEventListener('DOMContentLoaded', () => {
             currentClasses.forEach((item, index) => {
                 const card = document.createElement('article');
                 card.className = 'card';
+                card.dataset.index = index;
                 card.innerHTML = `
                     <div class="card-header-flex">
                         <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem;">${item.title}</h3>
@@ -402,8 +403,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `Instructor: ${item.instructor}` : 'Instructor: Not assigned'}</p>
                     <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">${item.date || 'No schedule set'}</p>
                     <div class="card-actions">
-                        <button class="edit-btn" data-type="class" data-index="${index}">Edit</button>
-                        <button class="delete-btn" data-type="class" data-index="${index}">Delete</button>
+                        <button class="edit-btn" data-action="edit-class" data-index="${index}">Edit</button>
+                        <button class="delete-btn" data-action="delete-class" data-index="${index}">Delete</button>
                     </div>
                 `;
                 classesListContainer.appendChild(card);
@@ -425,24 +426,26 @@ document.addEventListener('DOMContentLoaded', () => {
             currentTasks.forEach((task, index) => {
                 const taskCard = document.createElement('div');
                 taskCard.className = `task-item ${task.completed ? 'completed' : ''}`;
+                taskCard.dataset.index = index;
                 taskCard.innerHTML = `
-                    <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
                         <input type="checkbox" class="task-checkbox" data-index="${index}" ${task.completed ? 'checked' : ''}>
-                        <div>
+                        <div style="flex: 1;">
                             <h3>${task.title}</h3>
                             <p>${task.description || 'No description provided.'}</p>
                             <span style="font-size: 0.75rem; color: var(--accent-purple); font-weight: 600;">Due: ${task.date || 'No date set'}</span>
                         </div>
                     </div>
                     <div class="card-actions" style="margin-top: 0;">
-                        <button class="edit-btn" data-type="task" data-index="${index}">Edit</button>
-                        <button class="delete-btn" data-type="task" data-index="${index}">Delete</button>
+                        <button class="edit-btn" data-action="edit-task" data-index="${index}">Edit</button>
+                        <button class="delete-btn" data-action="delete-task" data-index="${index}">Delete</button>
                     </div>
                 `;
                 tasksListContainer.appendChild(taskCard);
             });
         }
 
+        // Checkbox State Toggle
         tasksListContainer.addEventListener('change', (e) => {
             if (e.target.classList.contains('task-checkbox')) {
                 const index = Number(e.target.dataset.index);
@@ -457,81 +460,145 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // In-Place Class Operations (Delete, Edit, Save, Cancel)
         classesListContainer.addEventListener('click', (e) => {
             const target = e.target;
+            const action = target.dataset.action;
             const index = Number(target.dataset.index);
             let currentClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
 
-            if (target.classList.contains('delete-btn')) {
+            if (action === 'delete-class') {
                 currentClasses.splice(index, 1);
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
                 updateProgressMetrics();
                 showToast("Class node deleted.");
-            } else if (target.classList.contains('edit-btn')) {
+            } else if (action === 'edit-class') {
+                const card = target.closest('.card');
                 const item = currentClasses[index];
-                const newTitle = prompt('Edit Class Title:', item.title);
-                if (newTitle === null) return;
-                
-                const newCode = prompt('Edit Class Code:', item.code || '');
-                if (newCode === null) return;
-                
-                const newInstructor = prompt('Edit Instructor:', item.instructor || '');
-                if (newInstructor === null) return;
-                
-                const newDate = prompt('Edit Schedule (Format: Mon, 14:00 - 15:30):', item.date || '');
-                if (newDate === null) return;
+                const parsed = parseClassTime(item.date);
+
+                card.innerHTML = `
+                    <input type="text" class="edit-field edit-class-title" value="${item.title}" placeholder="Class Title">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <input type="text" class="edit-field edit-class-code" value="${item.code || ''}" placeholder="Code">
+                        <input type="text" class="edit-field edit-class-instructor" value="${item.instructor || ''}" placeholder="Instructor">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
+                        <select class="edit-field edit-class-day">
+                            ${dayAbbreviations.map(d => `<option value="${d}" ${d === parsed.day ? 'selected' : ''}>${d}</option>`).join('')}
+                        </select>
+                        <input type="time" class="edit-field edit-class-start" value="${parsed.startTime || ''}">
+                        <input type="time" class="edit-field edit-class-end" value="${parsed.endTime || ''}">
+                    </div>
+                    <div class="card-actions">
+                        <button class="save-btn" data-action="save-class" data-index="${index}">Save</button>
+                        <button class="cancel-btn" data-action="cancel-class">Cancel</button>
+                    </div>
+                `;
+            } else if (action === 'save-class') {
+                const card = target.closest('.card');
+                const newTitle = card.querySelector('.edit-class-title').value.trim();
+                const newCode = card.querySelector('.edit-class-code').value.trim();
+                const newInstructor = card.querySelector('.edit-class-instructor').value.trim();
+                const newDay = card.querySelector('.edit-class-day').value;
+                const newStart = card.querySelector('.edit-class-start').value;
+                const newEnd = card.querySelector('.edit-class-end').value;
+
+                if (!newTitle) {
+                    showToast("Class title cannot be empty.", true);
+                    return;
+                }
+
+                if (!newStart || !newEnd) {
+                    showToast("Start and end times are required.", true);
+                    return;
+                }
 
                 currentClasses[index] = {
-                    title: newTitle.trim() || item.title,
-                    code: newCode.trim(),
-                    instructor: newInstructor.trim(),
-                    date: newDate.trim()
+                    title: newTitle,
+                    code: newCode,
+                    instructor: newInstructor,
+                    date: `${newDay}, ${newStart} - ${newEnd}`
                 };
 
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
                 updateProgressMetrics();
-                showToast("Class parameters updated.");
+                showToast("Class node updated.");
+            } else if (action === 'cancel-class') {
+                renderClassesList();
             }
         });
 
+        // In-Place Task Operations (Delete, Edit, Save, Cancel)
         tasksListContainer.addEventListener('click', (e) => {
             const target = e.target;
+            const action = target.dataset.action;
             const index = Number(target.dataset.index);
             let currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
 
-            if (target.classList.contains('delete-btn')) {
+            if (action === 'delete-task') {
                 currentTasks.splice(index, 1);
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
                 updateProgressMetrics();
-                showToast("Task deleted from queue.");
-            } else if (target.classList.contains('edit-btn')) {
+                showToast("Task removed from queue.");
+            } else if (action === 'edit-task') {
+                const taskCard = target.closest('.task-item');
                 const task = currentTasks[index];
-                const newTitle = prompt('Edit Task Title:', task.title);
-                if (newTitle === null) return;
+                const [taskDay, taskTime] = (task.date || 'Mon, 12:00').split(', ');
 
-                const newDate = prompt('Edit Due Date (Format: Mon, 14:00):', task.date || '');
-                if (newDate === null) return;
+                taskCard.innerHTML = `
+                    <div style="width: 100%;">
+                        <input type="text" class="edit-field edit-task-title" value="${task.title}" placeholder="Task Title">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                            <select class="edit-field edit-task-day">
+                                ${dayAbbreviations.map(d => `<option value="${d}" ${d === (taskDay || 'Mon') ? 'selected' : ''}>${d}</option>`).join('')}
+                            </select>
+                            <input type="time" class="edit-field edit-task-time" value="${(taskTime || '').trim()}">
+                        </div>
+                        <input type="text" class="edit-field edit-task-desc" value="${task.description || ''}" placeholder="Task Description">
+                        <div class="card-actions">
+                            <button class="save-btn" data-action="save-task" data-index="${index}">Save</button>
+                            <button class="cancel-btn" data-action="cancel-task">Cancel</button>
+                        </div>
+                    </div>
+                `;
+            } else if (action === 'save-task') {
+                const taskCard = target.closest('.task-item');
+                const newTitle = taskCard.querySelector('.edit-task-title').value.trim();
+                const newDay = taskCard.querySelector('.edit-task-day').value;
+                const newTime = taskCard.querySelector('.edit-task-time').value;
+                const newDesc = taskCard.querySelector('.edit-task-desc').value.trim();
 
-                const newDescription = prompt('Edit Task Description:', task.description || '');
-                if (newDescription === null) return;
+                if (!newTitle) {
+                    showToast("Task title cannot be empty.", true);
+                    return;
+                }
+
+                if (!newTime) {
+                    showToast("Due time is required.", true);
+                    return;
+                }
 
                 currentTasks[index] = {
-                    ...task,
-                    title: newTitle.trim() || task.title,
-                    date: newDate.trim() || task.date,
-                    description: newDescription.trim()
+                    ...currentTasks[index],
+                    title: newTitle,
+                    date: `${newDay}, ${newTime}`,
+                    description: newDesc
                 };
 
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
                 updateProgressMetrics();
-                showToast("Task parameters updated.");
+                showToast("Task queue updated.");
+            } else if (action === 'cancel-task') {
+                renderTasksList();
             }
         });
 
+        // Initial paint
         renderClassesList();
         renderTasksList();
         updateProgressMetrics();
