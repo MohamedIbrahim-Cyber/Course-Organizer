@@ -1,7 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // =========================================================================
-    // Reusable Toast Notification Utility
-    // =========================================================================
+    // Toast notification
     function showToast(message, isError = false) {
         let toast = document.getElementById('toast-notification');
         if (!toast) {
@@ -21,9 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
 
-    // =========================================================================
-    // Date & Time Formatting Utilities
-    // =========================================================================
+    // Date & time
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -72,9 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDateDisplay();
     setInterval(updateDateDisplay, 1000);
 
-    // =========================================================================
-    // Add Class Form Controls (Structured Day & Time Inputs)
-    // =========================================================================
+    // Add class
     const classTitleInput = document.getElementById('class-title');
     const codeInput = document.getElementById('class-code');
     const instructorInput = document.getElementById('class-instructor');
@@ -146,9 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =========================================================================
-    // Add Task Form Controls (Structured Day & Time Inputs)
-    // =========================================================================
+    // Add task
     const taskTitleInput = document.getElementById('task-title');
     const taskDaySelect = document.getElementById('task-day');
     const taskDueTimeInput = document.getElementById('task-due-time');
@@ -212,9 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =========================================================================
-    // Home Dashboard Dynamic Stats & Timeline (index.html)
-    // =========================================================================
+    // Dashboard feeds
     const now = getCurrentTimeSnapshot();
     const classesData = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
     const tasksData = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
@@ -340,9 +330,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // =========================================================================
-    // Classes & Tasks Hub (classes.html) Dynamic Management & In-Place Editing
-    // =========================================================================
+    // Hub metrics
     const classesListContainer = document.getElementById('classes-list');
     const tasksListContainer = document.getElementById('tasks-list');
     const tasksProgressPercentage = document.getElementById('tasks-progress-percentage');
@@ -442,7 +430,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Checkbox State Toggle
+        // Toggle task
         tasksListContainer.addEventListener('change', (e) => {
             if (e.target.classList.contains('task-checkbox')) {
                 const index = Number(e.target.dataset.index);
@@ -457,7 +445,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // In-Place Class Operations (Delete, Edit, Save, Cancel)
+        // Edit class
         classesListContainer.addEventListener('click', (e) => {
             const target = e.target;
             const action = target.dataset.action;
@@ -538,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // In-Place Task Operations (Delete, Edit, Save, Cancel)
+        // Edit task
         tasksListContainer.addEventListener('click', (e) => {
             const target = e.target;
             const action = target.dataset.action;
@@ -605,15 +593,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Initial paint
+        // Initialize lists
         renderClassesList();
         renderTasksList();
         updateProgressMetrics();
     }
 
-    // =========================================================================
-    // Contact Us & Interactive FAQ Engine (contact us.html)
-    // =========================================================================
+    // FAQ actions
     const faqList = document.getElementById('faq-list');
     const faqDetail = document.getElementById('faq-detail');
     const faqBackBtn = document.getElementById('faq-back-btn');
@@ -664,9 +650,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // =========================================================================
-    // Contact Form Submission (Discord Webhook Integration)
-    // =========================================================================
+    // Discord webhook
     const contactForm = document.getElementById('contact-form');
     const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1541116574692286535/9_-c0bSZ33hJB3CoDlIARtjmkGSCnlJx_E4yRyzH8OAsaxb5IxO-NGHRwaquwWa1N7U7';
 
@@ -701,7 +685,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 embeds: [
                     {
                         title: `Transmission: ${subject}`,
-                        color: 14334463, // Obsidian Purple Hex (#DAB9FF)
+                        color: 14334463,
                         fields: [
                             {
                                 name: "Sender",

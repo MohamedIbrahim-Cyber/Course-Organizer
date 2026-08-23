@@ -1,4 +1,4 @@
-/*colors*/
+/* Color variables */
 :root {
   --bg-terminal: #0E0E0E;
   --bg-surface: #1A1A1A;
@@ -37,6 +37,7 @@ body {
   line-height: 1.5;
 }
 
+/* Typography */
 .big-header {
   font-size: 4.5rem;
   font-weight: 800;
@@ -63,7 +64,7 @@ body {
   border-radius: 0.25rem;
 }
 
-/*navbar*/
+/* Navigation bar */
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -137,7 +138,7 @@ body {
   cursor: pointer;
 }
 
-/*blocks & layouts*/
+/* Dashboard blocks */
 .block-container {
   display: flex;
   gap: 2rem;
@@ -202,7 +203,7 @@ body {
   gap: 1rem;
 }
 
-/*cards*/
+/* Cards & timeline */
 .timeline {
   position: relative;
   padding-left: 2.5rem;
@@ -277,9 +278,7 @@ body {
   background-color: #222222;
 }
 
-/* ==========================================================================
-   Classes & Tasks Hub (classes.html)
-   ========================================================================== */
+/* Progress trackers */
 .progress {
   display: flex;
   gap: 2rem;
@@ -465,9 +464,7 @@ body {
   color: #121212;
 }
 
-/* ==========================================================================
-   Card Action Controls & In-Place Edit Mode
-   ========================================================================== */
+/* Edit controls */
 .card-actions {
   display: flex;
   gap: 0.5rem;
@@ -531,7 +528,6 @@ body {
   border-color: var(--text-main);
 }
 
-/* Inline Edit Field Modifiers */
 .card .edit-field,
 .task-item .edit-field {
   width: 100%;
@@ -555,9 +551,7 @@ body {
   box-shadow: 0 0 0.4rem var(--accent-purple-glow);
 }
 
-/* ==========================================================================
-   Forms & Controls
-   ========================================================================== */
+/* Forms */
 .form-container {
   padding: 2.5rem;
   margin: 0 3% 4% 3%;
@@ -715,9 +709,7 @@ input[type="time"].edit-field::-webkit-calendar-picker-indicator {
   transform: scale(0.97);
 }
 
-/* ==========================================================================
-   Animated Toast Notifications
-   ========================================================================== */
+/* Toast alert */
 .toast-notification {
   position: fixed;
   top: 2rem;
@@ -752,7 +744,7 @@ input[type="time"].edit-field::-webkit-calendar-picker-indicator {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 180, 171, 0.3);
 }
 
-/* FAQ & Contact us*/
+/* FAQ panel */
 .faq-detail {
   display: flex;
   flex-direction: column;
@@ -887,9 +879,7 @@ input[type="time"].edit-field::-webkit-calendar-picker-indicator {
   transition: color var(--fx-snappy);
 }
 
-/* ==========================================================================
-   Upgraded Terminal Footer Section
-   ========================================================================== */
+/* Footer */
 .terminal-footer {
   width: 100%;
   background-color: #0A0A0A;
@@ -1018,7 +1008,7 @@ input[type="time"].edit-field::-webkit-calendar-picker-indicator {
   transform: translateY(-2px);
 }
 
-/* animations*/
+/* Animations */
 .terminal-boot {
   display: inline-block;
   overflow: hidden;
@@ -1044,7 +1034,7 @@ input[type="time"].edit-field::-webkit-calendar-picker-indicator {
   100% { box-shadow: 0 0 1rem rgba(218, 185, 255, 0.8); }
 }
 
-/* responsive */
+/* Responsive queries */
 @media (max-width: 1024px) {
   .big-header {
     font-size: 3.5rem;
