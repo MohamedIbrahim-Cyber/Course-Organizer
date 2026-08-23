@@ -3,13 +3,13 @@
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Obsidian Architect| Contact Us</title>
+    <title>Obsidian Architect | Contact Us</title>
     <link rel="icon" type="image/png" href="photos/websitelogo.png">
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-     </head>
+    </head>
     
     <body>
         <nav class="navbar">
@@ -18,7 +18,6 @@
             </div>
             
             <ul class="nav-links">
-
                 <li><a href="index.html">Home</a></li>
                 <li><a href="add class.html">Add Class</a></li>
                 <li><a href="classes.html">My Classes</a></li>
@@ -38,49 +37,65 @@
             </div>
             <div class="small-line"></div>
         </div>
-        
 
         <div class="contact-page">
+            <!-- FAQ Section -->
             <div class="contact-card">
                 <h1 style="margin-top: -2%;">FAQ.</h1>
-                <div class="faq">
-            
-                    <h2>Here are some frequently asked questions.</h2>
+                
+                <!-- FAQ List View -->
+                <div id="faq-list" class="faq">
+                    <h2>Frequently Asked Questions</h2>
                     <div class="faq-item">
-                       <button class="faq-button">1. How do I bridge my external university schedule with the system?</button>
+                        <button class="faq-button" data-faq="1">1. How does Obsidian Architect store and index my schedule nodes?</button>
                     </div>
                     <div class="faq-item">
-                        <button class="faq-button">2. Are my academic logs stored on-site or synced to the cloud?</button>
+                        <button class="faq-button" data-faq="2">2. What time format is required for automated schedule alerts?</button>
                     </div>
                     <div class="faq-item">
-                         <button class="faq-button">3. What is the process for submitting feedback about the system?</button>
+                        <button class="faq-button" data-faq="3">3. Are my class entries and task records preserved across sessions?</button>
                     </div>
                     <div class="faq-item">
-                         <button class="faq-button">4. What is the process for submitting feedback about the system?</button>
+                        <button class="faq-button" data-faq="4">4. How does the weekly focus filter calculate pending deadlines?</button>
                     </div>
+                </div>
+
+                <!-- FAQ Detail View (Revealed on Question Click) -->
+                <div id="faq-detail" class="faq-detail" style="display: none;">
+                    <button id="faq-back-btn" class="faq-back-btn">← Back to All FAQs</button>
+                    <h2 id="faq-detail-question" class="faq-detail-question"></h2>
+                    <div class="faq-detail-divider"></div>
+                    <p id="faq-detail-answer" class="faq-detail-answer"></p>
                 </div>
             </div>
 
+            <!-- Working Contact Form -->
             <div class="contact-form">
-                <div class="contact-inputs">
+                <form id="contact-form" class="contact-inputs">
                     <h2>Name:</h2>
-                    <input type="text" placeholder="User Name">
+                    <input id="contact-name" type="text" placeholder="e.g., Alex Vance" required>
+                    
                     <h2>Email:</h2>
-                    <input type="email" placeholder="User Email">
+                    <input id="contact-email" type="email" placeholder="e.g., alex.vance@terminal.io" required>
+                    
                     <h2>Inquiry Subject:</h2>
-                    <input type="text" placeholder="Question Subject">
+                    <input id="contact-subject" type="text" placeholder="e.g., Node sync error or feature request" required>
+                    
                     <h2>Inquiry Message:</h2>
-                    <textarea class="contact-textarea" placeholder="Your Message"></textarea>
-                    <button class="submit-btn">Submit</button>
-                </div>
+                    <textarea id="contact-message" class="contact-textarea" placeholder="Provide detailed context regarding your transmission..." required></textarea>
+                    
+                    <div id="contact-error-message" class="error-message"></div>
+                    <button type="submit" id="contact-submit-btn" class="submit-btn">Transmit Message</button>
+                </form>
             </div>
         </div>
 
-        
+        <!-- Floating Animated Toast Container -->
+        <div id="toast-notification" class="toast-notification"></div>
+
         <footer>
             <div class="footer-content">
                 <p class="copyright">© 2026 OBSIDIAN ARCHITECT TERMINAL. BUILT FOR DEEP FOCUS.</p>
-
                 <div class="footer-links">
                     <p>DOCUMENTATION</p>
                     <p>SYSTEM STATUS</p>

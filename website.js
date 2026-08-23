@@ -32,14 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const scheduleDateDisplay = document.getElementById('schedule-date');
 
     function parseClassTime(scheduleString) {
-        if (!scheduleString || !scheduleString.includes(', ')) {
+        if (!scheduleString || typeof scheduleString !== 'string' || !scheduleString.includes(', ')) {
             return { day: 'Mon', startTime: '', endTime: '', totalMinutes: 0 };
         }
         const [dayPart, timeRange] = scheduleString.split(', ');
         const [startTime, endTime] = (timeRange || '').split('-');
         
         const [hours, minutes] = (startTime || '0:0').trim().split(':').map(Number);
-        const totalMinutes = (hours || 0) * 60 + (minutes || 0);
+        const totalMinutes = ((isNaN(hours) ? 0 : hours) * 60) + (isNaN(minutes) ? 0 : minutes);
 
         return {
             day: dayPart.trim(),
@@ -612,5 +612,111 @@ document.addEventListener('DOMContentLoaded', () => {
         renderClassesList();
         renderTasksList();
         updateProgressMetrics();
+    }
+
+    // =========================================================================
+    // Contact Us & Interactive FAQ Engine (contact us.html)
+    // =========================================================================
+    const faqList = document.getElementById('faq-list');
+    const faqDetail = document.getElementById('faq-detail');
+    const faqBackBtn = document.getElementById('faq-back-btn');
+    const faqQuestionDisplay = document.getElementById('faq-detail-question');
+    const faqAnswerDisplay = document.getElementById('faq-detail-answer');
+
+    const faqDatabase = {
+        "1": {
+            question: "How does Obsidian Architect store and index my schedule nodes?",
+            answer: "All class timetables and task parameters are stored directly within your browser's persistent localStorage engine. Entries remain indexed indefinitely across browser reloads without external telemetry, giving you instant offline performance."
+        },
+        "2": {
+            question: "What time format is required for automated schedule alerts?",
+            answer: "The system enforces structured 24-hour time entries formatted as 'Day, HH:MM - HH:MM' (e.g., Mon, 14:00 - 15:30). The internal clock continuously parses these intervals to highlight upcoming lectures on your dashboard."
+        },
+        "3": {
+            question: "Are my class entries and task records preserved across sessions?",
+            answer: "Yes. Your active sessions write directly to device memory. If you need to edit or remove a node, you can modify any class or task parameter directly using the in-place editor in the 'My Classes' terminal."
+        },
+        "4": {
+            question: "How does the weekly focus filter calculate pending deadlines?",
+            answer: "The live scheduler analyzes the current calendar day against registered task due dates. Any objectives due later in the active weekly cycle are automatically categorized into the 'Tasks Due This Week' metric."
+        }
+    };
+
+    if (faqList && faqDetail) {
+        faqList.addEventListener('click', (e) => {
+            const button = e.target.closest('.faq-button');
+            if (!button) return;
+
+            const faqId = button.dataset.faq;
+            const faqItem = faqDatabase[faqId];
+
+            if (faqItem) {
+                faqQuestionDisplay.textContent = faqItem.question;
+                faqAnswerDisplay.textContent = faqItem.answer;
+                
+                faqList.style.display = 'none';
+                faqDetail.style.display = 'flex';
+            }
+        });
+
+        if (faqBackBtn) {
+            faqBackBtn.addEventListener('click', () => {
+                faqDetail.style.display = 'none';
+                faqList.style.display = 'flex';
+            });
+        }
+    }
+
+    // Contact Form Submission (Google Apps Script Integration)
+    const contactForm = document.getElementById('contact-form');
+    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzst-UaA84p1nlLgVR6OUXOpIeLpQ0qxKfoZDnjls8yMGc6r6UvumqcrRL3CLvN1Dws/exec';
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const nameInput = document.getElementById('contact-name');
+            const emailInput = document.getElementById('contact-email');
+            const subjectInput = document.getElementById('contact-subject');
+            const messageInput = document.getElementById('contact-message');
+            const submitBtn = document.getElementById('contact-submit-btn');
+            const errorMsg = document.getElementById('contact-error-message');
+
+            const payload = {
+                name: nameInput.value.trim(),
+                email: emailInput.value.trim(),
+                subject: subjectInput.value.trim(),
+                message: messageInput.value.trim()
+            };
+
+            if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+                if (errorMsg) errorMsg.textContent = "All transmission parameters are required.";
+                showToast("All fields are required.", true);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = "TRANSMITTING...";
+
+            try {
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                showToast("Inquiry logged into transmission database!");
+                contactForm.reset();
+                if (errorMsg) errorMsg.textContent = "";
+            } catch (err) {
+                showToast("Transmission failed. Check network connection.", true);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = "Transmit Message";
+            }
+        });
     }
 });
