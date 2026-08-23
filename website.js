@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Toast notification
+    // Toast alert
     function showToast(message, isError = false) {
         let toast = document.getElementById('toast-notification');
         if (!toast) {
@@ -19,9 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
 
-    // Default starter data
+    // Seed data
     function initializeSeedData() {
-        if (!localStorage.getItem('obsidianClasses')) {
+        const existingClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        if (existingClasses.length === 0) {
             const defaultClasses = [
                 {
                     title: "Advanced Distributed Systems",
@@ -45,7 +46,8 @@ document.addEventListener('DOMContentLoaded', () => {
             localStorage.setItem('obsidianClasses', JSON.stringify(defaultClasses));
         }
 
-        if (!localStorage.getItem('obsidianTasks')) {
+        const existingTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        if (existingTasks.length === 0) {
             const defaultTasks = [
                 {
                     title: "Implement dynamic memory allocator",
@@ -66,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initializeSeedData();
 
-    // Date & time
+    // Time utils
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -115,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateDateDisplay();
     setInterval(updateDateDisplay, 1000);
 
-    // Add class
+    // Class inputs
     const classTitleInput = document.getElementById('class-title');
     const codeInput = document.getElementById('class-code');
     const instructorInput = document.getElementById('class-instructor');
@@ -172,18 +174,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: formattedDate
             };
 
-            let existingClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
+            let existingClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
             existingClasses.push(newClass);
             localStorage.setItem('obsidianClasses', JSON.stringify(existingClasses));
 
-            showToast("Class node indexed! Redirecting...");
+            showToast("Class indexed! Redirecting...");
             setTimeout(() => {
                 window.location.href = 'classes.html';
-            }, 800);
+            }, 700);
         });
     }
 
-    // Add task
+    // Task inputs
     const taskTitleInput = document.getElementById('task-title');
     const taskDaySelect = document.getElementById('task-day');
     const taskDueTimeInput = document.getElementById('task-due-time');
@@ -234,21 +236,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 completed: false
             };
 
-            let existingTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+            let existingTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
             existingTasks.push(newTask);
             localStorage.setItem('obsidianTasks', JSON.stringify(existingTasks));
 
             showToast("Task indexed! Redirecting...");
             setTimeout(() => {
                 window.location.href = 'classes.html';
-            }, 800);
+            }, 700);
         });
     }
 
-    // Dashboard metrics
+    // Home counters
     const now = getCurrentTimeSnapshot();
-    const classesData = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
-    const tasksData = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+    const classesData = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+    const tasksData = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
 
     const todayClassesCounter = document.getElementById('today-classes-counter');
     if (todayClassesCounter) {
@@ -285,43 +287,53 @@ document.addEventListener('DOMContentLoaded', () => {
         if (tasksDueThisWeekCounter) tasksDueThisWeekCounter.textContent = tasksDueThisWeekCount;
     }
 
-    // Home schedule
+    // Render schedule
     function renderSchedule() {
         const timelineContainer = document.getElementById('dashboard-schedule');
         if (!timelineContainer) return;
 
         const currentTime = getCurrentTimeSnapshot();
-        const todayClasses = classesData.map(classItem => {
+        const parsedClasses = classesData.map(classItem => {
             const parsed = parseClassTime(classItem.date);
             return { ...classItem, parsed };
-        }).filter(classItem => classItem.parsed.day === currentTime.dayAbbreviation)
-          .sort((a, b) => a.parsed.totalMinutes - b.parsed.totalMinutes);
+        });
+
+        // Filter classes
+        let displayClasses = parsedClasses.filter(c => c.parsed.day === currentTime.dayAbbreviation)
+            .sort((a, b) => a.parsed.totalMinutes - b.parsed.totalMinutes);
+
+        // Fallback list
+        let isTodaySchedule = true;
+        if (displayClasses.length === 0) {
+            displayClasses = parsedClasses.slice(0, 3);
+            isTodaySchedule = false;
+        }
 
         timelineContainer.innerHTML = '';
 
-        if (todayClasses.length === 0) {
+        if (displayClasses.length === 0) {
             timelineContainer.innerHTML = `
                 <div class="timeline-item">
                     <div class="dot"></div>
                     <div class="card">
-                        <h1 style="font-size: 1.25rem; margin: 0;">No Classes Today</h1>
-                        <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">Your schedule is clear for today.</p>
+                        <h1 style="font-size: 1.25rem; margin: 0;">No Classes Indexed</h1>
+                        <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">Click "Add Class" to define nodes.</p>
                     </div>
                 </div>`;
             return;
         }
 
-        todayClasses.forEach((classItem, index) => {
+        displayClasses.forEach((classItem, index) => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'timeline-item';
-            const isNextClass = classItem.parsed.totalMinutes >= currentTime.totalMinutes;
-            const dotClass = (index === 0 || isNextClass) ? 'dot active' : 'dot';
-            const cardClass = (index === 0 || isNextClass) ? 'card highlighted' : 'card';
+            const isHighlight = index === 0;
+            const dotClass = isHighlight ? 'dot active' : 'dot';
+            const cardClass = isHighlight ? 'card highlighted' : 'card';
 
             itemDiv.innerHTML = `
                 <div class="${dotClass}"></div>
                 <div class="${cardClass}">
-                    <span class="time">${classItem.parsed.startTime} - ${classItem.parsed.endTime}</span>
+                    <span class="time">${isTodaySchedule ? '' : `${classItem.parsed.day} • `}${classItem.parsed.startTime} - ${classItem.parsed.endTime}</span>
                     <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${classItem.title} ${classItem.code ? `(${classItem.code})` : ''}</h1>
                     <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `Instructor: ${classItem.instructor}` : ''}</p>
                 </div>
@@ -330,12 +342,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Home tasks
+    // Render tasks
     function renderPriorityTasks() {
         const tasksContainer = document.getElementById('dashboard-tasks');
         if (!tasksContainer) return;
 
-        const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+        const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
         tasksContainer.innerHTML = '';
 
         if (currentTasks.length === 0) {
@@ -382,8 +394,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (classesListContainer && tasksListContainer) {
 
         function updateProgressMetrics() {
-            const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
-            const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
+            const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+            const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
 
             const totalTasks = currentTasks.length;
             const completedTasks = currentTasks.filter(task => task.completed).length;
@@ -406,7 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderClassesList() {
-            const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
+            const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
             classesListContainer.innerHTML = '';
 
             if (currentClasses.length === 0) {
@@ -438,7 +450,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         function renderTasksList() {
-            const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+            const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
             tasksListContainer.innerHTML = '';
 
             if (currentTasks.length === 0) {
@@ -475,7 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
         tasksListContainer.addEventListener('change', (e) => {
             if (e.target.classList.contains('task-checkbox')) {
                 const index = Number(e.target.dataset.index);
-                const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+                const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
                 
                 if (currentTasks[index]) {
                     currentTasks[index].completed = e.target.checked;
@@ -491,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = e.target;
             const action = target.dataset.action;
             const index = Number(target.dataset.index);
-            let currentClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
+            let currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
 
             if (action === 'delete-class') {
                 currentClasses.splice(index, 1);
@@ -572,7 +584,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const target = e.target;
             const action = target.dataset.action;
             const index = Number(target.dataset.index);
-            let currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
+            let currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
 
             if (action === 'delete-task') {
                 currentTasks.splice(index, 1);
@@ -640,7 +652,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updateProgressMetrics();
     }
 
-    // FAQ actions
+    // FAQ items
     const faqList = document.getElementById('faq-list');
     const faqDetail = document.getElementById('faq-detail');
     const faqBackBtn = document.getElementById('faq-back-btn');
