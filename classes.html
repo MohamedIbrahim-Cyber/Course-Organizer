@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" data-theme="dark">
     <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     </head> 
     
     <body>
@@ -16,16 +16,21 @@
         <!-- Navigation -->
         <nav class="navbar">
             <div class="logo">
-                <a href="index.html">Obsidian Architect</a>
+                <a href="index.html" data-i18n="logo">Obsidian Architect</a>
             </div>
             
             <ul class="nav-links">
-                <li><a href="index.html">Home</a></li>
-                <li><a href="add class.html">Add Class</a></li>
-                <li class="active"><a href="classes.html">My Classes</a></li>
-                <li><a href="contact us.html">Contact us</a></li>
+                <li><a href="index.html" data-i18n="nav_home">Home</a></li>
+                <li><a href="add class.html" data-i18n="nav_add">Add Class</a></li>
+                <li class="active"><a href="classes.html" data-i18n="nav_classes">My Classes</a></li>
+                <li><a href="contact us.html" data-i18n="nav_contact">Contact us</a></li>
             </ul>
             <div class="nav-icons">
+                <button id="lang-btn" class="lang-toggle-btn" aria-label="Toggle Language">AR</button>
+                <button id="theme-btn" class="theme-toggle-btn" aria-label="Toggle Theme">
+                    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
                 <span class="bell-icon">🔔</span>
                 <div class="profile-pic">
                     <img src="photos/avatar.png" alt="Profile Picture">
@@ -33,8 +38,8 @@
             </div>
         </nav>
 
-        <div style="margin-left: 3%;">
-            <div class="terminal-boot"><h1 class="big-header">My Classes</h1></div>
+        <div style="margin-inline-start: 3%;">
+            <div class="terminal-boot"><h1 class="big-header" data-i18n="my_classes_title">My Classes</h1></div>
             <div class="small-line" style="margin-top: 2%;"></div>
         </div>
 
@@ -43,7 +48,7 @@
             <div class="progress">
                 <div class="progress-item">
                     <div class="progress-header">
-                        <span class="title">CLASSES INDEXED</span>
+                        <span class="title" data-i18n="stat_classes_indexed">CLASSES INDEXED</span>
                         <span id="classes-progress-percentage" class="percentage">0 Registered</span>
                     </div>
                     <div class="progress-bar-wrapper">
@@ -53,7 +58,7 @@
 
                 <div class="progress-item">
                     <div class="progress-header">
-                        <span class="title">TASKS COMPLETION</span>
+                        <span class="title" data-i18n="stat_tasks_completion">TASKS COMPLETION</span>
                         <span id="tasks-progress-percentage" class="percentage">0%</span>
                     </div>
                     <div class="progress-bar-wrapper">
@@ -66,10 +71,10 @@
             <div class="classes-dashboard">
                 <div class="header">
                     <div>
-                        <h2 class="title">Registered Classes</h2>
-                        <p class="description-title">Active nodes indexed in your study terminal</p>
+                        <h2 class="title" data-i18n="reg_classes_heading">Registered Classes</h2>
+                        <p class="description-title" data-i18n="reg_classes_desc">Active nodes indexed in your study terminal</p>
                     </div>
-                    <a href="add class.html" class="add-class-button">Add a Class</a>
+                    <a href="add class.html" class="add-class-button" data-i18n="btn_add_class">Add a Class</a>
                 </div>
                 <div id="classes-list" class="classes-list"></div>
             </div>
@@ -78,10 +83,10 @@
             <div class="tasks-dashboard">
                 <div class="header">
                     <div>
-                        <h2 class="title">Active Tasks</h2>
-                        <p class="description-title">Pending operational objectives</p>
+                        <h2 class="title" data-i18n="active_tasks_heading">Active Tasks</h2>
+                        <p class="description-title" data-i18n="active_tasks_desc">Pending operational objectives</p>
                     </div>
-                    <a href="add class.html" class="add-task-button">Add a Task</a>
+                    <a href="add class.html" class="add-task-button" data-i18n="btn_add_task">Add a Task</a>
                 </div>
                 <div id="tasks-list" class="tasks-list"></div>
             </div>
@@ -95,36 +100,36 @@
             <div class="footer-container">
                 <div class="footer-main">
                     <div class="footer-brand">
-                        <div class="logo"><a href="index.html">Obsidian Architect</a></div>
-                        <p class="footer-desc">A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.</p>
+                        <div class="logo"><a href="index.html" data-i18n="logo">Obsidian Architect</a></div>
+                        <p class="footer-desc" data-i18n="footer_desc">A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.</p>
                         <div class="terminal-status">
                             <span class="status-indicator"></span>
-                            <span>TERMINAL STATUS: ONLINE • 2026</span>
+                            <span data-i18n="terminal_status">TERMINAL STATUS: ONLINE • 2026</span>
                         </div>
                     </div>
 
                     <div class="footer-links-grid">
                         <div class="footer-col">
-                            <h4>SYSTEM NODES</h4>
-                            <a href="index.html">Home Terminal</a>
-                            <a href="add class.html">Index Course / Task</a>
-                            <a href="classes.html">My Classes & Metrics</a>
-                            <a href="contact us.html">Transmission Portal</a>
+                            <h4 data-i18n="system_nodes">SYSTEM NODES</h4>
+                            <a href="index.html" data-i18n="nav_home">Home Terminal</a>
+                            <a href="add class.html" data-i18n="nav_add">Index Course / Task</a>
+                            <a href="classes.html" data-i18n="nav_classes">My Classes & Metrics</a>
+                            <a href="contact us.html" data-i18n="nav_contact">Transmission Portal</a>
                         </div>
                         <div class="footer-col">
-                            <h4>DEVELOPER & REPO</h4>
+                            <h4 data-i18n="dev_repo">DEVELOPER & REPO</h4>
                             <a href="https://github.com/MohamedIbrahim-Cyber/Course-Organizer" target="_blank" rel="noopener noreferrer">GitHub Repository ↗</a>
                             <a href="https://github.com/MohamedIbrahim-Cyber" target="_blank" rel="noopener noreferrer">GitHub Profile ↗</a>
                             <a href="https://course-organizer-eight.vercel.app/index.html" target="_blank" rel="noopener noreferrer">Live Deployment ↗</a>
-                            <a href="contact us.html">Contact Developer ↗</a>
+                            <a href="contact us.html" data-i18n="contact_dev">Contact Developer ↗</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="footer-bottom-bar">
-                    <p class="copyright">© 2026 OBSIDIAN ARCHITECT. BUILT & CODED BY MOHAMED IBRAHIM.</p>
+                    <p class="copyright" data-i18n="copyright">© 2026 OBSIDIAN ARCHITECT. BUILT & CODED BY MOHAMED IBRAHIM.</p>
                     <a href="#" class="footer-back-top">
-                        <span>BACK TO TOP</span>
+                        <span data-i18n="back_top">BACK TO TOP</span>
                         <span>↑</span>
                     </a>
                 </div>

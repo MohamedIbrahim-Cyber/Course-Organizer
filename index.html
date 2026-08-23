@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr" data-theme="dark">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,23 +8,32 @@
         <link rel="stylesheet" href="style.css">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
     </head>
     <body>
 
         <!-- Navigation -->
         <nav class="navbar">
             <div class="logo">
-                <a href="index.html">Obsidian Architect</a>
+                <a href="index.html" data-i18n="logo">Obsidian Architect</a>
             </div>
             
             <ul class="nav-links">
-                <li class="active"><a href="index.html">Home</a></li>
-                <li><a href="add class.html">Add Class</a></li>
-                <li><a href="classes.html">My Classes</a></li>
-                <li><a href="contact us.html">Contact us</a></li>
+                <li class="active"><a href="index.html" data-i18n="nav_home">Home</a></li>
+                <li><a href="add class.html" data-i18n="nav_add">Add Class</a></li>
+                <li><a href="classes.html" data-i18n="nav_classes">My Classes</a></li>
+                <li><a href="contact us.html" data-i18n="nav_contact">Contact us</a></li>
             </ul>
             <div class="nav-icons">
+                <!-- Language toggle -->
+                <button id="lang-btn" class="lang-toggle-btn" aria-label="Toggle Language">AR</button>
+
+                <!-- Theme toggle -->
+                <button id="theme-btn" class="theme-toggle-btn" aria-label="Toggle Theme">
+                    <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                    <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                </button>
+
                 <span class="bell-icon">🔔</span>
                 <div class="profile-pic">
                     <img src="photos/avatar.png" alt="Profile Picture">
@@ -33,9 +42,9 @@
         </nav>
 
         <div style="display: flex;">
-            <div style="padding-left: 3%;">
+            <div style="padding-inline-start: 3%;">
                 <div class="terminal-boot">
-                    <h1 class="big-header">Welcome back Architect.</h1>
+                    <h1 class="big-header" data-i18n="welcome_header">Welcome back Architect.</h1>
                 </div>
             </div>
         </div>
@@ -43,15 +52,15 @@
         <!-- Live counters -->
         <div class="block-container">
             <div class="sub-block"> 
-                <p>CLASSES TODAY</p>
-                <h1 id="today-classes-counter" style="font-size: 48px; color: var(--accent-purple);">0</h1>
+                <p data-i18n="classes_today">CLASSES TODAY</p>
+                <h1 id="today-classes-counter" style="font-size: 48px; color: var(--primary);">0</h1>
             </div>
             <div class="sub-block">    
-                <p>TASKS TODAY</p>
+                <p data-i18n="tasks_today">TASKS TODAY</p>
                 <h1 id="today-tasks-counter" style="font-size: 48px;">0</h1>
             </div>
             <div class="sub-block">    
-                <p>TASKS DUE THIS WEEK</p>
+                <p data-i18n="tasks_this_week">TASKS DUE THIS WEEK</p>
                 <h1 id="this-week-tasks-counter" style="font-size: 48px; color: #D4CA38;">0</h1>
             </div>
         </div>
@@ -60,7 +69,7 @@
         <div class="dashboard">
             <section class="schedule-section">
                 <div class="tasks-header" style="margin-bottom: 1rem;">
-                    <h1>Today's Schedule</h1> 
+                    <h1 data-i18n="schedule_title">Today's Schedule</h1> 
                     <p id="schedule-date" style="opacity: 0.7; color: var(--text-muted); font-size: 0.9rem; margin: 0;"></p>
                 </div>
                 <div class="timeline" id="dashboard-schedule"></div>
@@ -68,8 +77,8 @@
             
             <section class="tasks">
                 <div class="tasks-header">
-                    <h1>Priority Tasks</h1>
-                    <span id="view-all-tasks" class="view-all-tasks" style="cursor: pointer;">VIEW ALL</span>
+                    <h1 data-i18n="priority_tasks_title">Priority Tasks</h1>
+                    <span id="view-all-tasks" class="view-all-tasks" style="cursor: pointer;" data-i18n="view_all">VIEW ALL</span>
                 </div>
                 <div class="task-list" id="dashboard-tasks"></div>
             </section>
@@ -83,36 +92,36 @@
             <div class="footer-container">
                 <div class="footer-main">
                     <div class="footer-brand">
-                        <div class="logo"><a href="index.html">Obsidian Architect</a></div>
-                        <p class="footer-desc">A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.</p>
+                        <div class="logo"><a href="index.html" data-i18n="logo">Obsidian Architect</a></div>
+                        <p class="footer-desc" data-i18n="footer_desc">A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.</p>
                         <div class="terminal-status">
                             <span class="status-indicator"></span>
-                            <span>TERMINAL STATUS: ONLINE • 2026</span>
+                            <span data-i18n="terminal_status">TERMINAL STATUS: ONLINE • 2026</span>
                         </div>
                     </div>
 
                     <div class="footer-links-grid">
                         <div class="footer-col">
-                            <h4>SYSTEM NODES</h4>
-                            <a href="index.html">Home Terminal</a>
-                            <a href="add class.html">Index Course / Task</a>
-                            <a href="classes.html">My Classes & Metrics</a>
-                            <a href="contact us.html">Transmission Portal</a>
+                            <h4 data-i18n="system_nodes">SYSTEM NODES</h4>
+                            <a href="index.html" data-i18n="nav_home">Home Terminal</a>
+                            <a href="add class.html" data-i18n="nav_add">Index Course / Task</a>
+                            <a href="classes.html" data-i18n="nav_classes">My Classes & Metrics</a>
+                            <a href="contact us.html" data-i18n="nav_contact">Transmission Portal</a>
                         </div>
                         <div class="footer-col">
-                            <h4>DEVELOPER & REPO</h4>
+                            <h4 data-i18n="dev_repo">DEVELOPER & REPO</h4>
                             <a href="https://github.com/MohamedIbrahim-Cyber/Course-Organizer" target="_blank" rel="noopener noreferrer">GitHub Repository ↗</a>
                             <a href="https://github.com/MohamedIbrahim-Cyber" target="_blank" rel="noopener noreferrer">GitHub Profile ↗</a>
                             <a href="https://course-organizer-eight.vercel.app/index.html" target="_blank" rel="noopener noreferrer">Live Deployment ↗</a>
-                            <a href="contact us.html">Contact Developer ↗</a>
+                            <a href="contact us.html" data-i18n="contact_dev">Contact Developer ↗</a>
                         </div>
                     </div>
                 </div>
 
                 <div class="footer-bottom-bar">
-                    <p class="copyright">© 2026 OBSIDIAN ARCHITECT. BUILT & CODED BY MOHAMED IBRAHIM.</p>
+                    <p class="copyright" data-i18n="copyright">© 2026 OBSIDIAN ARCHITECT. BUILT & CODED BY MOHAMED IBRAHIM.</p>
                     <a href="#" class="footer-back-top">
-                        <span>BACK TO TOP</span>
+                        <span data-i18n="back_top">BACK TO TOP</span>
                         <span>↑</span>
                     </a>
                 </div>
