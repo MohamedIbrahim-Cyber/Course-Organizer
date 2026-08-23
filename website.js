@@ -667,9 +667,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Contact Form Submission (Google Apps Script Integration)
+    // =========================================================================
+    // Contact Form Submission (Discord Webhook Integration)
+    // =========================================================================
     const contactForm = document.getElementById('contact-form');
-    const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvLaO5PYjxFXdOeGEpXsjeCEwL8IaIzbUOiMudLZct5ZE1JB3nItqFe59wXekYgrZS/exec';
+    const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1541116574692286535/9_-c0bSZ33hJB3CoDlIARtjmkGSCnlJx_E4yRyzH8OAsaxb5IxO-NGHRwaquwWa1N7U7';
 
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
@@ -682,14 +684,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = document.getElementById('contact-submit-btn');
             const errorMsg = document.getElementById('contact-error-message');
 
-            const payload = {
-                name: nameInput.value.trim(),
-                email: emailInput.value.trim(),
-                subject: subjectInput.value.trim(),
-                message: messageInput.value.trim()
-            };
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const subject = subjectInput.value.trim();
+            const message = messageInput.value.trim();
 
-            if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+            if (!name || !email || !subject || !message) {
                 if (errorMsg) errorMsg.textContent = "All transmission parameters are required.";
                 showToast("All fields are required.", true);
                 return;
@@ -698,19 +698,54 @@ document.addEventListener('DOMContentLoaded', () => {
             submitBtn.disabled = true;
             submitBtn.textContent = "TRANSMITTING...";
 
+            const discordPayload = {
+                username: "Obsidian Terminal",
+                avatar_url: "https://i.imgur.com/83pL34z.png",
+                embeds: [
+                    {
+                        title: `Transmission: ${subject}`,
+                        color: 14334463, // Obsidian Purple Hex (#DAB9FF)
+                        fields: [
+                            {
+                                name: "Sender",
+                                value: name,
+                                inline: true
+                            },
+                            {
+                                name: "Email",
+                                value: email,
+                                inline: true
+                            },
+                            {
+                                name: "Message",
+                                value: message,
+                                inline: false
+                            }
+                        ],
+                        footer: {
+                            text: "Obsidian Architect Communication Log"
+                        },
+                        timestamp: new Date().toISOString()
+                    }
+                ]
+            };
+
             try {
-                await fetch(GOOGLE_SCRIPT_URL, {
+                const response = await fetch(DISCORD_WEBHOOK_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8'
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(discordPayload)
                 });
 
-                showToast("Inquiry logged into transmission database!");
-                contactForm.reset();
-                if (errorMsg) errorMsg.textContent = "";
+                if (response.ok) {
+                    showToast("Transmission beamed to Discord channel!");
+                    contactForm.reset();
+                    if (errorMsg) errorMsg.textContent = "";
+                } else {
+                    showToast("Discord transmission error.", true);
+                }
             } catch (err) {
                 showToast("Transmission failed. Check network connection.", true);
             } finally {
