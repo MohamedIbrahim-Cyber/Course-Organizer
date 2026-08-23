@@ -1,20 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // Class addition form elements
-    const classTitleInput = document.getElementById('class-title');
-    const codeInput = document.getElementById('class-code');
-    const instructorInput = document.getElementById('class-instructor');
-    const classDateInput = document.getElementById('class-date');
-    const addClassBtn = document.getElementById('add-class-btn');
-    const classDiscardBtn = document.getElementById('discard-btn');
+    // =========================================================================
+    // Reusable Toast Notification Utility
+    // =========================================================================
+    function showToast(message, isError = false) {
+        let toast = document.getElementById('toast-notification');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast-notification';
+            toast.className = 'toast-notification';
+            document.body.appendChild(toast);
+        }
 
-    // Task addition form elements
-    const taskTitleInput = document.getElementById('task-title');
-    const taskDateInput = document.getElementById('task-due-date');
-    const taskDescriptionInput = document.getElementById('task-description');
-    const addTaskBtn = document.getElementById('add-task-btn');
-    const taskDiscardBtn = document.getElementById('discard-task-btn');
+        toast.textContent = message;
+        toast.classList.toggle('error', isError);
+        toast.classList.add('active');
 
-    // Live date display elements & constants
+        if (window.toastTimer) clearTimeout(window.toastTimer);
+        window.toastTimer = setTimeout(() => {
+            toast.classList.remove('active');
+        }, 3200);
+    }
+
+    // =========================================================================
+    // Date & Time Formatting Utilities
+    // =========================================================================
     const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const months = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -22,7 +31,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateDisplayContainer = document.getElementById('live-date-display');
     const scheduleDateDisplay = document.getElementById('schedule-date');
 
-    // Utility: Parse schedule string formatted like "Mon, 14:00 - 15:30"
     function parseClassTime(scheduleString) {
         if (!scheduleString || !scheduleString.includes(', ')) {
             return { day: '', startTime: '', endTime: '', totalMinutes: 0 };
@@ -41,7 +49,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Time snapshot helper
     function getCurrentTimeSnapshot() {
         const now = new Date();
         return {
@@ -57,33 +64,40 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // Update Live Date Displays
     function updateDateDisplay() {
         const time = getCurrentTimeSnapshot();
         const formattedDate = `${time.dayName}, ${time.monthName} ${time.numericDay}`;
         
-        if (dateDisplayContainer) {
-            dateDisplayContainer.textContent = formattedDate;
-        }
-        if (scheduleDateDisplay) {
-            scheduleDateDisplay.textContent = formattedDate;
-        }
+        if (dateDisplayContainer) dateDisplayContainer.textContent = formattedDate;
+        if (scheduleDateDisplay) scheduleDateDisplay.textContent = formattedDate;
     }
 
-    // Initialize display and start timer
     updateDateDisplay();
     setInterval(updateDateDisplay, 1000);
 
     // =========================================================================
-    // Add Class Form Logic
+    // Add Class Form Controls (Structured Day & Time Inputs)
     // =========================================================================
+    const classTitleInput = document.getElementById('class-title');
+    const codeInput = document.getElementById('class-code');
+    const instructorInput = document.getElementById('class-instructor');
+    const classDaySelect = document.getElementById('class-day');
+    const classStartTimeInput = document.getElementById('class-start-time');
+    const classEndTimeInput = document.getElementById('class-end-time');
+    const addClassBtn = document.getElementById('add-class-btn');
+    const classDiscardBtn = document.getElementById('discard-btn');
+
     if (classDiscardBtn) {
         classDiscardBtn.addEventListener('click', (e) => {
             e.preventDefault();
             classTitleInput.value = "";
             codeInput.value = "";
             instructorInput.value = "";
-            classDateInput.value = "";
+            if (classDaySelect) classDaySelect.selectedIndex = 0;
+            if (classStartTimeInput) classStartTimeInput.value = "";
+            if (classEndTimeInput) classEndTimeInput.value = "";
+            const errorMsg = document.getElementById('class-error-message');
+            if (errorMsg) errorMsg.textContent = "";
         });
     }
 
@@ -93,21 +107,31 @@ document.addEventListener('DOMContentLoaded', () => {
             const titleVal = classTitleInput.value.trim();
             const codeVal = codeInput.value.trim();
             const instructorVal = instructorInput.value.trim();
-            const dateVal = classDateInput.value.trim();
+            const dayVal = classDaySelect ? classDaySelect.value : 'Mon';
+            const startVal = classStartTimeInput ? classStartTimeInput.value : '';
+            const endVal = classEndTimeInput ? classEndTimeInput.value : '';
 
             const errorMsg = document.getElementById('class-error-message');
-            const confirmMsg = document.getElementById('class-confirmation-message');
 
             if (titleVal === '') {
-                if (errorMsg) errorMsg.textContent = "Class title is required!";
+                if (errorMsg) errorMsg.textContent = "Class title is required.";
+                showToast("Class title is required.", true);
                 return;
             }
+
+            if (!startVal || !endVal) {
+                if (errorMsg) errorMsg.textContent = "Both start and end times are required.";
+                showToast("Please specify start and end times.", true);
+                return;
+            }
+
+            const formattedDate = `${dayVal}, ${startVal} - ${endVal}`;
 
             const newClass = {
                 title: titleVal,
                 code: codeVal,
                 instructor: instructorVal,
-                date: dateVal
+                date: formattedDate
             };
 
             let existingClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
@@ -117,22 +141,31 @@ document.addEventListener('DOMContentLoaded', () => {
             classTitleInput.value = "";
             codeInput.value = "";
             instructorInput.value = "";
-            classDateInput.value = "";
-
-            if (confirmMsg) confirmMsg.textContent = "Class added successfully!";
+            classStartTimeInput.value = "";
+            classEndTimeInput.value = "";
             if (errorMsg) errorMsg.textContent = "";
+
+            showToast("Class node successfully indexed!");
         });
     }
 
     // =========================================================================
-    // Add Task Form Logic
+    // Add Task Form Controls (Structured Day & Time Inputs)
     // =========================================================================
+    const taskTitleInput = document.getElementById('task-title');
+    const taskDaySelect = document.getElementById('task-day');
+    const taskDueTimeInput = document.getElementById('task-due-time');
+    const taskDescriptionInput = document.getElementById('task-description');
+    const addTaskBtn = document.getElementById('add-task-btn');
+    const taskDiscardBtn = document.getElementById('discard-task-btn');
+
     if (taskDiscardBtn) {
         taskDiscardBtn.addEventListener('click', (e) => {
             e.preventDefault();
             taskTitleInput.value = "";
-            taskDateInput.value = "";
             taskDescriptionInput.value = "";
+            if (taskDaySelect) taskDaySelect.selectedIndex = 0;
+            if (taskDueTimeInput) taskDueTimeInput.value = "";
             const errorMsg = document.getElementById('task-error-message');
             if (errorMsg) errorMsg.textContent = "";
         });
@@ -143,19 +176,28 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const titleVal = taskTitleInput.value.trim();
             const descriptionVal = taskDescriptionInput.value.trim();
-            const dateVal = taskDateInput.value.trim();
+            const dayVal = taskDaySelect ? taskDaySelect.value : 'Mon';
+            const timeVal = taskDueTimeInput ? taskDueTimeInput.value : '';
 
             const errorMsg = document.getElementById('task-error-message');
-            const confirmMsg = document.getElementById('task-confirmation-message');
 
-            if (titleVal === '' || dateVal === '') {
-                if (errorMsg) errorMsg.textContent = "Task title and date are required!";
+            if (titleVal === '') {
+                if (errorMsg) errorMsg.textContent = "Task title is required.";
+                showToast("Task title is required.", true);
                 return;
             }
 
+            if (!timeVal) {
+                if (errorMsg) errorMsg.textContent = "Task due time is required.";
+                showToast("Please specify a due time.", true);
+                return;
+            }
+
+            const formattedDate = `${dayVal}, ${timeVal}`;
+
             const newTask = {
                 title: titleVal,
-                date: dateVal,
+                date: formattedDate,
                 description: descriptionVal,
                 completed: false
             };
@@ -166,15 +208,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
             taskTitleInput.value = "";
             taskDescriptionInput.value = "";
-            taskDateInput.value = "";
-
-            if (confirmMsg) confirmMsg.textContent = "Task added successfully!";
+            taskDueTimeInput.value = "";
             if (errorMsg) errorMsg.textContent = "";
+
+            showToast("Task successfully added to queue!");
         });
     }
 
     // =========================================================================
-    // Home Dashboard Counters & Timelines
+    // Home Dashboard Dynamic Stats & Timeline (index.html)
     // =========================================================================
     const now = getCurrentTimeSnapshot();
     const classesData = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
@@ -302,7 +344,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // =========================================================================
-    // Classes & Tasks Page (classes.html) Dynamic Management
+    // Classes & Tasks Page Management (classes.html)
     // =========================================================================
     const classesListContainer = document.getElementById('classes-list');
     const tasksListContainer = document.getElementById('tasks-list');
@@ -317,7 +359,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks')) || [];
             const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses')) || [];
 
-            // Task Completion Metric
             const totalTasks = currentTasks.length;
             const completedTasks = currentTasks.filter(task => task.completed).length;
             const taskPercentage = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
@@ -329,7 +370,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 tasksProgressFill.style.width = `${taskPercentage}%`;
             }
 
-            // Class Registration Metric
             const totalClasses = currentClasses.length;
             if (classesProgressPercentage) {
                 classesProgressPercentage.textContent = `${totalClasses} Registered`;
@@ -403,7 +443,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
-        // Checkbox State Toggle
         tasksListContainer.addEventListener('change', (e) => {
             if (e.target.classList.contains('task-checkbox')) {
                 const index = Number(e.target.dataset.index);
@@ -418,7 +457,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Class Actions (Edit & Delete)
         classesListContainer.addEventListener('click', (e) => {
             const target = e.target;
             const index = Number(target.dataset.index);
@@ -429,6 +467,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
                 updateProgressMetrics();
+                showToast("Class node deleted.");
             } else if (target.classList.contains('edit-btn')) {
                 const item = currentClasses[index];
                 const newTitle = prompt('Edit Class Title:', item.title);
@@ -440,7 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newInstructor = prompt('Edit Instructor:', item.instructor || '');
                 if (newInstructor === null) return;
                 
-                const newDate = prompt('Edit Schedule (e.g. Mon, 14:00 - 15:30):', item.date || '');
+                const newDate = prompt('Edit Schedule (Format: Mon, 14:00 - 15:30):', item.date || '');
                 if (newDate === null) return;
 
                 currentClasses[index] = {
@@ -453,10 +492,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
                 updateProgressMetrics();
+                showToast("Class parameters updated.");
             }
         });
 
-        // Task Actions (Edit & Delete)
         tasksListContainer.addEventListener('click', (e) => {
             const target = e.target;
             const index = Number(target.dataset.index);
@@ -467,12 +506,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
                 updateProgressMetrics();
+                showToast("Task deleted from queue.");
             } else if (target.classList.contains('edit-btn')) {
                 const task = currentTasks[index];
                 const newTitle = prompt('Edit Task Title:', task.title);
                 if (newTitle === null) return;
 
-                const newDate = prompt('Edit Due Date (e.g. Mon, 14:00 - 15:30):', task.date || '');
+                const newDate = prompt('Edit Due Date (Format: Mon, 14:00):', task.date || '');
                 if (newDate === null) return;
 
                 const newDescription = prompt('Edit Task Description:', task.description || '');
@@ -488,10 +528,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
                 updateProgressMetrics();
+                showToast("Task parameters updated.");
             }
         });
 
-        // Initial Paint
         renderClassesList();
         renderTasksList();
         updateProgressMetrics();

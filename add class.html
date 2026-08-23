@@ -9,7 +9,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
-     
     </head>
     <body>
 
@@ -35,9 +34,9 @@
             <div class="small-line" style="margin-bottom: 3%;"></div>
             <label>Define the parameters for a new academic node. These entries will be indexed into your primary study terminal.</label>
         </div>
-        <div id="class-confirmation-message" class="confirmation-message"></div>
+
+        <!-- Class Registration Form -->
         <div class="form-container">
-            
             <div>
                 <h3>CLASS TITLE</h3>
                 <input id="class-title" class="class-input" type="text" placeholder="e.g., Advanced Distributed Systems">
@@ -52,36 +51,64 @@
                     <input id="class-instructor" class="class-input" type="text" placeholder="Dr. Amr Ghonim">
                 </div>
             </div>
-            <div>
-                <h3>CLASS DATE</h3>
-                <input id="class-date" class="class-input" type="text" placeholder="Mon, 14:00 - 15:30">
+            <div class="row-3">
+                <div>
+                    <h3>DAY</h3>
+                    <select id="class-day" class="class-input">
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                        <option value="Sun">Sunday</option>
+                    </select>
+                </div>
+                <div>
+                    <h3>START TIME</h3>
+                    <input id="class-start-time" class="class-input" type="time">
+                </div>
+                <div>
+                    <h3>END TIME</h3>
+                    <input id="class-end-time" class="class-input" type="time">
+                </div>
             </div>
             <div id="class-error-message" class="error-message"></div>
             <div class="btn-container">
                 <button id="add-class-btn" class="add-class-btn">Add Class</button>
                 <button id="discard-btn" class="discard-btn">Discard Draft</button>
             </div>
-            
         </div>
+
         <h1 style="margin-left: 3%;">Add a Task</h1>
-        <div id="task-confirmation-message" class="confirmation-message"></div>
+        
+        <!-- Task Registration Form -->
         <div class="form-container">
-            
             <div>
-                <div>
                 <h3>TASK TITLE</h3>
-                <input id="task-title" class="class-input" type="text" placeholder="e.g., Implement a new feature">
-                </div>
+                <input id="task-title" class="class-input" type="text" placeholder="e.g., Implement dynamic memory allocator">
             </div>
             <div class="row">
                 <div>
-                    <h3>TASK DUE DATE</h3>
-                    <input id="task-due-date" class="class-input" type="text" placeholder="Mon, 14:00 - 15:30">
+                    <h3>DUE DAY</h3>
+                    <select id="task-day" class="class-input">
+                        <option value="Mon">Monday</option>
+                        <option value="Tue">Tuesday</option>
+                        <option value="Wed">Wednesday</option>
+                        <option value="Thu">Thursday</option>
+                        <option value="Fri">Friday</option>
+                        <option value="Sat">Saturday</option>
+                        <option value="Sun">Sunday</option>
+                    </select>
                 </div>
                 <div>
-                    <h3>TASK DESCRIPTION</h3>
-                    <input id="task-description" class="class-input" type="text" placeholder="Implement a new feature in the project">
+                    <h3>DUE TIME</h3>
+                    <input id="task-due-time" class="class-input" type="time">
                 </div>
+            </div>
+            <div>
+                <h3>TASK DESCRIPTION</h3>
+                <input id="task-description" class="class-input" type="text" placeholder="Write comprehensive unit tests and benchmarks">
             </div>
             <div id="task-error-message" class="error-message"></div>
             <div class="btn-container">
@@ -90,10 +117,12 @@
             </div>
         </div>
 
+        <!-- Floating Animated Toast Container -->
+        <div id="toast-notification" class="toast-notification"></div>
+
         <footer>
             <div class="footer-content">
                 <p class="copyright">© 2026 OBSIDIAN ARCHITECT TERMINAL. BUILT FOR DEEP FOCUS.</p>
-
                 <div class="footer-links">
                     <p>DOCUMENTATION</p>
                     <p>SYSTEM STATUS</p>

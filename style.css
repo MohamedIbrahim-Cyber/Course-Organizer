@@ -510,7 +510,9 @@ body {
   border-color: var(--accent-alert);
 }
 
-/* forms*/
+/* ==========================================================================
+   Forms & Controls
+   ========================================================================== */
 .form-container {
   padding: 2.5rem;
   margin: 0 3% 4% 3%;
@@ -547,6 +549,27 @@ label {
   transition: border-color var(--fx-snappy), box-shadow var(--fx-snappy);
 }
 
+select.class-input {
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23DAB9FF' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1rem;
+  padding-right: 2.5rem;
+}
+
+select.class-input option {
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+}
+
+input[type="time"].class-input::-webkit-calendar-picker-indicator {
+  filter: invert(80%) sepia(20%) saturate(1000%) hue-rotate(220deg);
+  cursor: pointer;
+}
+
 .class-input:focus, .contact-inputs input:focus, .contact-textarea:focus {
   outline: none;
   border-color: var(--accent-purple);
@@ -564,20 +587,22 @@ label {
   gap: 1.5rem;
 }
 
+.row-3 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  gap: 1.5rem;
+}
+
 .btn-container {
   display: flex;
   gap: 1.5rem;
 }
- 
-.confirmation-message {
-  margin: 1% 0 1.5% 3%;
-  font-size: 2rem;
-}
 
 .error-message {
-  color: rgb(218, 23, 23);
-  margin: 0 0 1% 0;
-  font-size: 1.1rem;
+  color: var(--accent-alert);
+  margin: 0 0 1.5rem 0;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .add-class-btn, .discard-btn, .submit-btn {
@@ -635,6 +660,43 @@ label {
 
 .add-class-btn:active, .discard-btn:active, .submit-btn:active {
   transform: scale(0.97);
+}
+
+/* ==========================================================================
+   Animated Toast Notifications
+   ========================================================================== */
+.toast-notification {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background-color: var(--bg-surface);
+  color: var(--text-main);
+  border-left: 0.35rem solid var(--accent-purple);
+  padding: 1rem 1.75rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px var(--accent-purple-glow);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  opacity: 0;
+  transform: translateY(-25px) scale(0.95);
+  pointer-events: none;
+  transition: opacity var(--fx-fluid), transform var(--fx-fluid);
+  z-index: 9999;
+}
+
+.toast-notification.active {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.toast-notification.error {
+  border-left-color: var(--accent-alert);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(255, 180, 171, 0.3);
 }
 
 /* contact us*/
@@ -789,7 +851,7 @@ footer {
     padding-bottom: 2rem;
   }
 
-  .row {
+  .row, .row-3 {
     grid-template-columns: 1fr;
   }
 }
@@ -849,6 +911,13 @@ footer {
 
   .task-list {
     padding-left: 0;
+  }
+
+  .toast-notification {
+    top: 1rem;
+    right: 1rem;
+    left: 1rem;
+    justify-content: center;
   }
 }
 
