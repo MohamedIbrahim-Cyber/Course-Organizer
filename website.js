@@ -480,17 +480,27 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 card.innerHTML = `
                     <input type="text" class="edit-field edit-class-title" value="${item.title}" placeholder="Class Title">
+                    
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
                         <input type="text" class="edit-field edit-class-code" value="${item.code || ''}" placeholder="Code">
                         <input type="text" class="edit-field edit-class-instructor" value="${item.instructor || ''}" placeholder="Instructor">
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem;">
-                        <select class="edit-field edit-class-day">
-                            ${dayAbbreviations.map(d => `<option value="${d}" ${d === parsed.day ? 'selected' : ''}>${d}</option>`).join('')}
-                        </select>
-                        <input type="time" class="edit-field edit-class-start" value="${parsed.startTime || ''}">
-                        <input type="time" class="edit-field edit-class-end" value="${parsed.endTime || ''}">
+
+                    <select class="edit-field edit-class-day">
+                        ${dayAbbreviations.map(d => `<option value="${d}" ${d === parsed.day ? 'selected' : ''}>${d}</option>`).join('')}
+                    </select>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+                        <div>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 2px;">START TIME</span>
+                            <input type="time" class="edit-field edit-class-start" value="${parsed.startTime || ''}">
+                        </div>
+                        <div>
+                            <span style="font-size: 0.7rem; color: var(--text-muted); display: block; margin-bottom: 2px;">END TIME</span>
+                            <input type="time" class="edit-field edit-class-end" value="${parsed.endTime || ''}">
+                        </div>
                     </div>
+
                     <div class="card-actions">
                         <button class="save-btn" data-action="save-class" data-index="${index}">Save</button>
                         <button class="cancel-btn" data-action="cancel-class">Cancel</button>
