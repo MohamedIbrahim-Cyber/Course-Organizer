@@ -9,7 +9,27 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static(__dirname));
+app.use('/photos', express.static(path.join(__dirname, 'photos')));
+app.use(express.static(__dirname, {
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css; charset=utf-8');
+    } else if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    }
+  }
+}));
+
+// Explicit static route handlers to ensure zero MIME-type or path resolution issues
+app.get('/style.css', (req, res) => {
+  res.setHeader('Content-Type', 'text/css; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'style.css'));
+});
+
+app.get('/website.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'website.js'));
+});
 
 // Discord Webhook Proxy Endpoint
 app.post('/api/contact', async (req, res) => {
@@ -83,10 +103,18 @@ app.get(['/', '/index.html', '/home'], (req, res) => {
 });
 
 app.get('*', (req, res) => {
+  // If requesting a static file with an extension that does not exist, return 404 instead of index.html
+  if (req.path.includes('.') && !req.path.endsWith('.html')) {
+    return res.status(404).send('Asset not found');
+  }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-  console.log(`Obsidian Architect Server running on http://0.0.0.0:${PORT}`);
-});
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Obsidian Architect Server running on http://0.0.0.0:${PORT}`);
+  });
+}
+
+export default app;
 
