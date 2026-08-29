@@ -9,6 +9,15 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script>
+        (function() {
+            var theme = localStorage.getItem('obsidian_theme') || 'dark';
+            var lang = localStorage.getItem('obsidian_lang') || 'en';
+            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute('lang', lang);
+            document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+        })();
+    </script>
     </head>
     
     <body>
@@ -30,9 +39,24 @@
                     <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
                     <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
                 </button>
-                <span class="bell-icon">🔔</span>
-                <div class="profile-pic">
-                    <img src="photos/avatar.png" alt="Profile Picture">
+                
+                <!-- Notification Bell -->
+                <div class="bell-wrapper" id="bell-wrapper">
+                    <button class="bell-btn" id="bell-btn" aria-label="Notifications">
+                        <span>🔔</span>
+                        <span class="bell-badge hidden" id="bell-badge">0</span>
+                    </button>
+                    <div class="notification-dropdown" id="notification-dropdown">
+                        <div class="notif-header">
+                            <h4 data-i18n="notif_title">System Alerts</h4>
+                            <button class="notif-clear-btn" id="notif-clear-btn" data-i18n="notif_clear">Mark All Read</button>
+                        </div>
+                        <div class="notif-list" id="notif-list"></div>
+                    </div>
+                </div>
+
+                <div class="profile-pic" id="profile-pic-btn" title="Edit Operator Profile">
+                    <img id="nav-avatar-img" src="photos/avatar.png" alt="Profile Picture">
                 </div>
             </div>
         </nav>
@@ -95,6 +119,43 @@
             </div>
         </div>
 
+        <!-- Operator Profile Modal -->
+        <div class="modal-overlay" id="profile-modal">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h3 data-i18n="profile_modal_title">Operator Terminal Profile</h3>
+                    <button class="modal-close-btn" id="profile-modal-close">×</button>
+                </div>
+                <form id="profile-form">
+                    <div class="form-group">
+                        <label for="operator-name-input" data-i18n="operator_name_label">Call-Sign / Architect Name</label>
+                        <input type="text" id="operator-name-input" placeholder="e.g. Architect Ibrahim" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="choose_avatar_label">Select System Avatar</label>
+                        <div class="avatar-selector-grid">
+                            <div class="avatar-opt selected" data-avatar="photos/avatar.png">
+                                <img src="photos/avatar.png" alt="Avatar 1">
+                            </div>
+                            <div class="avatar-opt" data-avatar="photos/websitelogo.png">
+                                <img src="photos/websitelogo.png" alt="Avatar 2">
+                            </div>
+                            <div class="avatar-opt" data-avatar="photos/security.png">
+                                <img src="photos/security.png" alt="Avatar 3">
+                            </div>
+                            <div class="avatar-opt" data-avatar="photos/serverlink.png">
+                                <img src="photos/serverlink.png" alt="Avatar 4">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" id="profile-cancel-btn" data-i18n="btn_cancel">Cancel</button>
+                        <button type="submit" class="submit-btn" style="width: auto; padding: 0.65rem 1.5rem;" data-i18n="btn_save">Save Profile</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
         <!-- Notification container -->
         <div id="toast-notification" class="toast-notification"></div>
 
@@ -105,10 +166,6 @@
                     <div class="footer-brand">
                         <div class="logo"><a href="index.html" data-i18n="logo">Obsidian Architect</a></div>
                         <p class="footer-desc" data-i18n="footer_desc">A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.</p>
-                        <div class="terminal-status">
-                            <span class="status-indicator"></span>
-                            <span data-i18n="terminal_status">TERMINAL STATUS: ONLINE • 2026</span>
-                        </div>
                     </div>
 
                     <div class="footer-links-grid">

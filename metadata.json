@@ -1,0 +1,8 @@
+{
+  "name": "Obsidian Architect",
+  "description": "A deep-focus academic command terminal designed to index university courses, track assignment deadlines, and stream operational logs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
