@@ -36,29 +36,7 @@ if (activeConfig.supabaseUrl && activeConfig.supabaseAnonKey) {
 }
 
 // Default Academic Dataset for Fresh Initialization
-const DEFAULT_INITIAL_CLASSES = [
-    {
-        id: 'cls_def_1',
-        title: "Advanced Operating Systems",
-        code: "CS-301",
-        instructor: "Dr. Vance",
-        date: "Mon, 09:00 - 10:30"
-    },
-    {
-        id: 'cls_def_2',
-        title: "Distributed Systems & Cloud",
-        code: "CS-410",
-        instructor: "Dr. Sterling",
-        date: "Wed, 11:00 - 12:30"
-    },
-    {
-        id: 'cls_def_3',
-        title: "Cyber Security Protocols",
-        code: "SEC-220",
-        instructor: "Eng. Mohamed Ibrahim",
-        date: "Thu, 14:00 - 16:00"
-    }
-];
+const DEFAULT_INITIAL_CLASSES = [];
 
 const DEFAULT_INITIAL_TASKS = [
     {

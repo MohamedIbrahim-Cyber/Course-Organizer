@@ -331,26 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initial Sample Dataset Bootstrapping (if empty or blank)
     // --------------------------------------------------------------------------
     function initializeDefaultData() {
-        const defaultClasses = [
-            {
-                title: "Advanced Operating Systems",
-                code: "CS-301",
-                instructor: "Dr. Vance",
-                date: "Mon, 09:00 - 10:30"
-            },
-            {
-                title: "Distributed Systems & Cloud",
-                code: "CS-410",
-                instructor: "Dr. Sterling",
-                date: "Wed, 11:00 - 12:30"
-            },
-            {
-                title: "Cyber Security Protocols",
-                code: "SEC-220",
-                instructor: "Eng. Mohamed Ibrahim",
-                date: "Thu, 14:00 - 16:00"
-            }
-        ];
+        const defaultClasses = [];
 
         const defaultTasks = [
             {
@@ -379,16 +360,27 @@ document.addEventListener('DOMContentLoaded', () => {
             localClasses = raw ? JSON.parse(raw) : [];
         } catch { localClasses = []; }
 
+        // Filter out old default courses if present
+        const oldDefaultTitles = ["Advanced Operating Systems", "Distributed Systems & Cloud", "Cyber Security Protocols"];
+        localClasses = localClasses.filter(c => !oldDefaultTitles.includes(c.title));
+
         if (!Array.isArray(localClasses) || localClasses.length === 0) {
             let backupClasses = [];
             try {
                 const bRaw = localStorage.getItem('obsidian_backup_classes');
-                backupClasses = bRaw ? JSON.parse(bRaw) : [];
+                if (bRaw) {
+                    backupClasses = JSON.parse(bRaw);
+                    if (Array.isArray(backupClasses)) {
+                        backupClasses = backupClasses.filter(c => !oldDefaultTitles.includes(c.title));
+                    }
+                }
             } catch { backupClasses = []; }
 
             const toStore = (Array.isArray(backupClasses) && backupClasses.length > 0) ? backupClasses : defaultClasses;
             localStorage.setItem('obsidianClasses', JSON.stringify(toStore));
             localStorage.setItem('obsidian_backup_classes', JSON.stringify(toStore));
+        } else {
+            localStorage.setItem('obsidianClasses', JSON.stringify(localClasses));
         }
 
         let localTasks = [];
