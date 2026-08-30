@@ -153,8 +153,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_session_timeout: "Session timed out due to inactivity. Terminal locked safely.",
             toast_auth_weak_pass: "Password must be at least 6 characters.",
             toast_auth_invalid_email: "Please enter a valid email address.",
-            toast_auth_user_not_found: "Invalid credentials or account does not exist.",
-            toast_auth_email_in_use: "This email address is already registered. Please sign in."
+            toast_auth_user_not_found: "Account not found. If new, click 'Create Account' to register first.",
+            toast_auth_email_in_use: "This email address is already registered. Please sign in.",
+            toast_auth_popup_closed: "Sign-in popup was closed. Please try again or open in a new tab.",
+            toast_auth_popup_blocked: "Sign-in popup was blocked by browser. Please allow popups.",
+            toast_auth_unauthorized_domain: "Domain not authorized. Add your domain to Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "Provider not enabled. In Firebase Console, go to Authentication > Sign-in method and enable Google & Email/Password."
         },
         ar: {
             logo: "المهندس أوبسيديان",
@@ -306,8 +310,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_session_timeout: "انتهت صلاحية الجلسة لعدم النشاط. تم قفل المحطة بأمان.",
             toast_auth_weak_pass: "يجب ألا تقل كلمة المرور عن 6 أحرف.",
             toast_auth_invalid_email: "يرجى إدخال عنوان بريد إلكتروني صالح.",
-            toast_auth_user_not_found: "بيانات الدخول غير صحيحة أو الحساب غير موجود.",
-            toast_auth_email_in_use: "هذا البريد مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك."
+            toast_auth_user_not_found: "الحساب غير مسجل. يرجى النقر على 'إنشاء حساب جديد' للتسجيل أولاً.",
+            toast_auth_email_in_use: "هذا البريد مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.",
+            toast_auth_popup_closed: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى أو فتح الموقع في نافذة جديدة.",
+            toast_auth_popup_blocked: "تم حظر النافذة المنبثقة من قِبل المتصفح. يرجى السماح بالنوافذ المنبثقة.",
+            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاقك في Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "طريقة تسجيل الدخول غير مفعلة. يرجى تفعيل Google و Email/Password من لوحة Firebase Console > Authentication > Sign-in method."
         }
     };
 
@@ -1975,7 +1983,20 @@ document.addEventListener('DOMContentLoaded', () => {
     // Auth Error Sanitizer & Localizer
     function getFriendlyAuthError(err) {
         const t = translations[currentLang];
-        const msg = (err && err.code) || (err && err.message) || '';
+        const msg = ((err && err.code) || (err && err.message) || '').toLowerCase();
+        
+        if (msg.includes('unauthorized-domain')) {
+            return t.toast_auth_unauthorized_domain;
+        }
+        if (msg.includes('operation-not-allowed')) {
+            return t.toast_auth_op_not_allowed;
+        }
+        if (msg.includes('popup-blocked')) {
+            return t.toast_auth_popup_blocked;
+        }
+        if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
+            return t.toast_auth_popup_closed;
+        }
         if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
             return t.toast_auth_user_not_found;
         }
@@ -1988,7 +2009,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (msg.includes('invalid-email')) {
             return t.toast_auth_invalid_email;
         }
-        return t.toast_auth_error;
+        return (err && err.message) || t.toast_auth_error;
     }
 
     // Google Sign In
