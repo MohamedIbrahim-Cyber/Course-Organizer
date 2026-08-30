@@ -130,35 +130,22 @@ document.addEventListener('DOMContentLoaded', () => {
             btn_signin_cloud: "Sign In / Sync",
             btn_account: "Account",
             auth_modal_title: "Cloud Synchronization & Account",
-            tab_login: "Sign In",
-            tab_register: "Create Account",
+            auth_sync_feature_title: "Cloud Synchronization",
+            auth_modal_desc: "Sign in with your Google account to sync all your classes, task objectives, schedules, and custom preferences securely in real time across all devices.",
             btn_google_signin: "Continue with Google",
-            auth_or: "OR EMAIL TRANSMISSION",
-            label_operator_name: "Architect Name / Call-Sign",
-            label_password: "Password:",
-            btn_signin: "Sign In",
-            btn_register: "Create Account",
-            auth_no_account: "Need a terminal account?",
-            auth_has_account: "Already registered?",
-            auth_create_one: "Create one",
-            auth_signin_link: "Sign in",
+            btn_google_redirect: "Having trouble with popup? Sign in with Page Redirect",
             btn_signout: "Sign Out of Terminal",
             status_synced: "Synced",
             status_guest: "Guest (Offline)",
             auth_sync_desc: "Your classes and task objectives are synchronized in real-time across all your devices.",
             toast_auth_signin_ok: "Terminal authenticated. Cloud synchronization active.",
-            toast_auth_register_ok: "Architect account created! Synchronizing data...",
             toast_auth_signout_ok: "Signed out of terminal.",
-            toast_auth_error: "Authentication error. Please check credentials.",
+            toast_auth_error: "Authentication error. Please try again.",
             toast_session_timeout: "Session timed out due to inactivity. Terminal locked safely.",
-            toast_auth_weak_pass: "Password must be at least 6 characters.",
-            toast_auth_invalid_email: "Please enter a valid email address.",
-            toast_auth_user_not_found: "Account not found. If new, click 'Create Account' to register first.",
-            toast_auth_email_in_use: "This email address is already registered. Please sign in.",
-            toast_auth_popup_closed: "Sign-in popup was closed. Please try again or open in a new tab.",
-            toast_auth_popup_blocked: "Sign-in popup was blocked by browser. Please allow popups.",
-            toast_auth_unauthorized_domain: "Domain not authorized. Add your domain to Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "Provider not enabled. In Firebase Console, go to Authentication > Sign-in method and enable Google & Email/Password."
+            toast_auth_popup_closed: "Sign-in popup was closed. Please try again or use the Page Redirect option.",
+            toast_auth_popup_blocked: "Sign-in popup was blocked by browser. Please allow popups or use Page Redirect.",
+            toast_auth_unauthorized_domain: "Domain not authorized. Add your Vercel domain to Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "Google sign-in is disabled in Firebase Console > Authentication > Sign-in method."
         },
         ar: {
             logo: "المهندس أوبسيديان",
@@ -287,35 +274,22 @@ document.addEventListener('DOMContentLoaded', () => {
             btn_signin_cloud: "تسجيل الدخول / المزامنة",
             btn_account: "حسابي",
             auth_modal_title: "المزامنة السحابية والحساب",
-            tab_login: "تسجيل الدخول",
-            tab_register: "إنشاء حساب جديد",
+            auth_sync_feature_title: "المزامنة السحابية الفورية",
+            auth_modal_desc: "سجل الدخول باستخدام حساب Google لحفظ ومزامنة كافة محاضراتك ومهامك وجداولك وإعداداتك بشكل آمن عبر جميع أجهزتك.",
             btn_google_signin: "المتابعة باستخدام Google",
-            auth_or: "أو عبر البريد الإلكتروني",
-            label_operator_name: "اسم المهندس / نداء المحطة",
-            label_password: "كلمة المرور:",
-            btn_signin: "تسجيل الدخول",
-            btn_register: "إنشاء الحساب",
-            auth_no_account: "لا تمتلك حساب محطة؟",
-            auth_has_account: "لديك حساب بالفعل؟",
-            auth_create_one: "أنشئ حسابك الآن",
-            auth_signin_link: "تسجيل الدخول",
+            btn_google_redirect: "مشكلة في النافذة المنبثقة؟ تسجيل الدخول عبر التحويل المباشر",
             btn_signout: "تسجيل الخروج من المحطة",
             status_synced: "متصل وسحابي",
             status_guest: "وضع الضيف (محلي)",
             auth_sync_desc: "يتم حفظ ومزامنة محاضراتك ومهامك في الوقت الفعلي عبر جميع أجهزتك.",
             toast_auth_signin_ok: "تم تسجيل الدخول بنجاح. المزامنة السحابية نشطة الآن.",
-            toast_auth_register_ok: "تم إنشاء حساب المهندس بنجاح! جاري مزامنة البيانات...",
             toast_auth_signout_ok: "تم تسجيل الخروج بنجاح.",
-            toast_auth_error: "خطأ في تسجيل الدخول. يرجى التحقق من صحة البيانات.",
+            toast_auth_error: "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مجددًا.",
             toast_session_timeout: "انتهت صلاحية الجلسة لعدم النشاط. تم قفل المحطة بأمان.",
-            toast_auth_weak_pass: "يجب ألا تقل كلمة المرور عن 6 أحرف.",
-            toast_auth_invalid_email: "يرجى إدخال عنوان بريد إلكتروني صالح.",
-            toast_auth_user_not_found: "الحساب غير مسجل. يرجى النقر على 'إنشاء حساب جديد' للتسجيل أولاً.",
-            toast_auth_email_in_use: "هذا البريد مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك.",
-            toast_auth_popup_closed: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى أو فتح الموقع في نافذة جديدة.",
-            toast_auth_popup_blocked: "تم حظر النافذة المنبثقة من قِبل المتصفح. يرجى السماح بالنوافذ المنبثقة.",
-            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاقك في Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "طريقة تسجيل الدخول غير مفعلة. يرجى تفعيل Google و Email/Password من لوحة Firebase Console > Authentication > Sign-in method."
+            toast_auth_popup_closed: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى أو استخدام خيار التحويل المباشر.",
+            toast_auth_popup_blocked: "تم حظر النافذة المنبثقة من قِبل المتصفح. يرجى السماح بالنوافذ المنبثقة أو استخدام خيار التحويل.",
+            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاق Vercel الخاص بك في Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "تسجيل الدخول عبر Google غير مفعل في لوحة Firebase Console."
         }
     };
 
@@ -326,55 +300,85 @@ document.addEventListener('DOMContentLoaded', () => {
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
     // --------------------------------------------------------------------------
-    // 2. Initial Sample Dataset Bootstrapping (if empty)
+    // 2. Initial Sample Dataset Bootstrapping (if empty or blank)
     // --------------------------------------------------------------------------
     function initializeDefaultData() {
-        if (!localStorage.getItem('obsidianClasses')) {
-            const defaultClasses = [
-                {
-                    title: "Advanced Operating Systems",
-                    code: "CS-301",
-                    instructor: "Dr. Vance",
-                    date: "Mon, 09:00 - 10:30"
-                },
-                {
-                    title: "Distributed Systems & Cloud",
-                    code: "CS-410",
-                    instructor: "Dr. Sterling",
-                    date: "Wed, 11:00 - 12:30"
-                },
-                {
-                    title: "Cyber Security Protocols",
-                    code: "SEC-220",
-                    instructor: "Eng. Mohamed Ibrahim",
-                    date: "Thu, 14:00 - 16:00"
-                }
-            ];
-            localStorage.setItem('obsidianClasses', JSON.stringify(defaultClasses));
+        const defaultClasses = [
+            {
+                title: "Advanced Operating Systems",
+                code: "CS-301",
+                instructor: "Dr. Vance",
+                date: "Mon, 09:00 - 10:30"
+            },
+            {
+                title: "Distributed Systems & Cloud",
+                code: "CS-410",
+                instructor: "Dr. Sterling",
+                date: "Wed, 11:00 - 12:30"
+            },
+            {
+                title: "Cyber Security Protocols",
+                code: "SEC-220",
+                instructor: "Eng. Mohamed Ibrahim",
+                date: "Thu, 14:00 - 16:00"
+            }
+        ];
+
+        const defaultTasks = [
+            {
+                title: "Kernel Synchronization Lab",
+                description: "Implement semaphore lock barriers and solve race conditions in C/Rust.",
+                date: "Wed, 23:59",
+                completed: false
+            },
+            {
+                title: "Microservices Architecture Essay",
+                description: "Submit 5-page case study analyzing event-driven distributed consensus.",
+                date: "Fri, 18:00",
+                completed: false
+            },
+            {
+                title: "Network Packet Analysis WireGuard",
+                description: "Inspect PCAP stream captures and verify cryptographic handshakes.",
+                date: "Sat, 20:00",
+                completed: true
+            }
+        ];
+
+        let localClasses = [];
+        try {
+            const raw = localStorage.getItem('obsidianClasses');
+            localClasses = raw ? JSON.parse(raw) : [];
+        } catch { localClasses = []; }
+
+        if (!Array.isArray(localClasses) || localClasses.length === 0) {
+            let backupClasses = [];
+            try {
+                const bRaw = localStorage.getItem('obsidian_backup_classes');
+                backupClasses = bRaw ? JSON.parse(bRaw) : [];
+            } catch { backupClasses = []; }
+
+            const toStore = (Array.isArray(backupClasses) && backupClasses.length > 0) ? backupClasses : defaultClasses;
+            localStorage.setItem('obsidianClasses', JSON.stringify(toStore));
+            localStorage.setItem('obsidian_backup_classes', JSON.stringify(toStore));
         }
 
-        if (!localStorage.getItem('obsidianTasks')) {
-            const defaultTasks = [
-                {
-                    title: "Kernel Synchronization Lab",
-                    description: "Implement semaphore lock barriers and solve race conditions in C/Rust.",
-                    date: "Wed, 23:59",
-                    completed: false
-                },
-                {
-                    title: "Microservices Architecture Essay",
-                    description: "Submit 5-page case study analyzing event-driven distributed consensus.",
-                    date: "Fri, 18:00",
-                    completed: false
-                },
-                {
-                    title: "Network Packet Analysis WireGuard",
-                    description: "Inspect PCAP stream captures and verify cryptographic handshakes.",
-                    date: "Sat, 20:00",
-                    completed: true
-                }
-            ];
-            localStorage.setItem('obsidianTasks', JSON.stringify(defaultTasks));
+        let localTasks = [];
+        try {
+            const raw = localStorage.getItem('obsidianTasks');
+            localTasks = raw ? JSON.parse(raw) : [];
+        } catch { localTasks = []; }
+
+        if (!Array.isArray(localTasks) || localTasks.length === 0) {
+            let backupTasks = [];
+            try {
+                const bRaw = localStorage.getItem('obsidian_backup_tasks');
+                backupTasks = bRaw ? JSON.parse(bRaw) : [];
+            } catch { backupTasks = []; }
+
+            const toStore = (Array.isArray(backupTasks) && backupTasks.length > 0) ? backupTasks : defaultTasks;
+            localStorage.setItem('obsidianTasks', JSON.stringify(toStore));
+            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(toStore));
         }
     }
     initializeDefaultData();
@@ -1288,7 +1292,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const classEndTimeInput = document.getElementById('class-end-time') || document.getElementById('end-time');
 
     if (addClassBtn && classTitleInput) {
-        addClassBtn.addEventListener('click', (e) => {
+        addClassBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const t = translations[currentLang];
             const title = classTitleInput.value.trim();
@@ -1314,9 +1318,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: `${day.slice(0, 3)}, ${startTime} - ${endTime}`
             };
 
+            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
+                const cloudId = await window.ObsidianAuth.addClass(newClass);
+                if (cloudId) newClass.id = cloudId;
+            }
+
             const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
             classes.push(newClass);
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
+            localStorage.setItem('obsidian_backup_classes', JSON.stringify(classes));
 
             showToast(t.toast_class_indexed);
             setTimeout(() => {
@@ -1340,7 +1350,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskDescDirect = document.getElementById('task-description') || document.getElementById('task-desc');
 
     if (addTaskDirectBtn && taskTitleDirect) {
-        addTaskDirectBtn.addEventListener('click', (e) => {
+        addTaskDirectBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             const t = translations[currentLang];
             const title = taskTitleDirect.value.trim();
@@ -1360,9 +1370,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 completed: false
             };
 
+            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
+                const cloudId = await window.ObsidianAuth.addTask(newTask);
+                if (cloudId) newTask.id = cloudId;
+            }
+
             const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
             tasks.push(newTask);
             localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
+            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(tasks));
 
             showToast(t.toast_task_indexed);
             setTimeout(() => {
@@ -1869,33 +1885,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const authToggleActionBtn = document.getElementById('auth-toggle-action-btn');
     const authEmailForm = document.getElementById('auth-email-form');
     const btnGoogleAuth = document.getElementById('btn-google-auth');
+    const btnGoogleRedirect = document.getElementById('btn-google-redirect');
     const btnAuthSignout = document.getElementById('btn-auth-signout');
     const navSyncIndicator = document.getElementById('nav-sync-indicator');
     const navAuthLabel = document.getElementById('nav-auth-label');
-
-    let currentAuthMode = 'login'; // 'login' or 'register'
-
-    function setAuthMode(mode) {
-        currentAuthMode = mode;
-        const t = translations[currentLang];
-        if (mode === 'login') {
-            if (authTabLogin) authTabLogin.classList.add('active');
-            if (authTabRegister) authTabRegister.classList.remove('active');
-            if (groupAuthName) groupAuthName.style.display = 'none';
-            if (authSubmitBtn) authSubmitBtn.textContent = t.btn_signin;
-            const toggleText = document.getElementById('auth-toggle-text');
-            if (toggleText) toggleText.textContent = t.auth_no_account;
-            if (authToggleActionBtn) authToggleActionBtn.textContent = t.auth_create_one;
-        } else {
-            if (authTabRegister) authTabRegister.classList.add('active');
-            if (authTabLogin) authTabLogin.classList.remove('active');
-            if (groupAuthName) groupAuthName.style.display = 'block';
-            if (authSubmitBtn) authSubmitBtn.textContent = t.btn_register;
-            const toggleText = document.getElementById('auth-toggle-text');
-            if (toggleText) toggleText.textContent = t.auth_has_account;
-            if (authToggleActionBtn) authToggleActionBtn.textContent = t.auth_signin_link;
-        }
-    }
 
     function openAuthModal() {
         if (authModal) {
@@ -1972,14 +1965,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    if (authTabLogin) authTabLogin.addEventListener('click', () => setAuthMode('login'));
-    if (authTabRegister) authTabRegister.addEventListener('click', () => setAuthMode('register'));
-    if (authToggleActionBtn) {
-        authToggleActionBtn.addEventListener('click', () => {
-            setAuthMode(currentAuthMode === 'login' ? 'register' : 'login');
-        });
-    }
-
     // Auth Error Sanitizer & Localizer
     function getFriendlyAuthError(err) {
         const t = translations[currentLang];
@@ -1997,22 +1982,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
             return t.toast_auth_popup_closed;
         }
-        if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
-            return t.toast_auth_user_not_found;
-        }
-        if (msg.includes('email-already-in-use')) {
-            return t.toast_auth_email_in_use;
-        }
-        if (msg.includes('weak-password')) {
-            return t.toast_auth_weak_pass;
-        }
-        if (msg.includes('invalid-email')) {
-            return t.toast_auth_invalid_email;
-        }
         return (err && err.message) || t.toast_auth_error;
     }
 
-    // Google Sign In
+    // Google Sign In (Popup)
     if (btnGoogleAuth) {
         btnGoogleAuth.addEventListener('click', async () => {
             const t = translations[currentLang];
@@ -2034,60 +2007,18 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Email / Password Form Submit (Register or Login)
-    if (authEmailForm) {
-        authEmailForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const t = translations[currentLang];
-            const emailInput = document.getElementById('auth-input-email');
-            const passInput = document.getElementById('auth-input-password');
-            const nameInput = document.getElementById('auth-input-name');
-
-            const email = emailInput ? emailInput.value.trim() : '';
-            const password = passInput ? passInput.value : '';
-            const name = nameInput ? nameInput.value.trim() : '';
-
-            // Input Validation Checks
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!email || !emailRegex.test(email)) {
-                showToast(t.toast_auth_invalid_email, true);
-                if (emailInput) emailInput.focus();
-                return;
-            }
-
-            if (!password || password.length < 6) {
-                showToast(t.toast_auth_weak_pass, true);
-                if (passInput) passInput.focus();
-                return;
-            }
-
+    // Google Sign In (Redirect Fallback for popup-blockers or mobile)
+    if (btnGoogleRedirect) {
+        btnGoogleRedirect.addEventListener('click', async () => {
             try {
-                if (authSubmitBtn) {
-                    authSubmitBtn.disabled = true;
-                    authSubmitBtn.textContent = '...';
-                }
-
-                if (currentAuthMode === 'register') {
-                    const res = await window.ObsidianAuth.registerWithEmail(email, password, name || 'Architect');
-                    if (res) {
-                        showToast(t.toast_auth_register_ok);
-                        closeAuthModal();
-                    }
-                } else {
-                    const res = await window.ObsidianAuth.signInWithEmail(email, password);
-                    if (res) {
-                        showToast(t.toast_auth_signin_ok);
-                        closeAuthModal();
-                    }
-                }
+                btnGoogleRedirect.disabled = true;
+                btnGoogleRedirect.style.opacity = '0.7';
+                await window.ObsidianAuth.signInWithGoogleRedirect();
             } catch (err) {
                 console.error(err);
                 showToast(getFriendlyAuthError(err), true);
-            } finally {
-                if (authSubmitBtn) {
-                    authSubmitBtn.disabled = false;
-                    authSubmitBtn.textContent = currentAuthMode === 'login' ? t.btn_signin : t.btn_register;
-                }
+                btnGoogleRedirect.disabled = false;
+                btnGoogleRedirect.style.opacity = '1';
             }
         });
     }
@@ -2114,28 +2045,44 @@ document.addEventListener('DOMContentLoaded', () => {
         updateAuthModalState();
     });
 
+    // Global UI Refresh Dispatcher
+    function refreshAllViews() {
+        if (typeof renderSchedule === 'function') renderSchedule();
+        if (typeof renderPriorityTasks === 'function') renderPriorityTasks();
+        if (typeof renderClassesList === 'function') renderClassesList();
+        if (typeof renderTasksList === 'function') renderTasksList();
+        if (typeof updateProgressMetrics === 'function') updateProgressMetrics();
+        if (typeof renderNotifications === 'function') renderNotifications();
+        if (typeof updateDashboardCounters === 'function') updateDashboardCounters();
+        if (typeof updateLiveCountdown === 'function') updateLiveCountdown();
+        if (typeof updateOperatorGreeting === 'function') updateOperatorGreeting();
+        if (typeof updateAvatarImages === 'function') updateAvatarImages();
+        if (typeof updateAuthModalState === 'function') updateAuthModalState();
+    }
+    window.ObsidianUI = {
+        refreshUI: refreshAllViews
+    };
+
     // Listen to Firebase Auth & Cloud Data Events from firebase-sync.js
     window.addEventListener('obsidian-auth-state-changed', (e) => {
-        updateAuthModalState();
-        updateAvatarImages();
-        updateOperatorGreeting();
+        refreshAllViews();
+    });
+
+    window.addEventListener('obsidian-data-updated', () => {
+        refreshAllViews();
     });
 
     window.addEventListener('obsidian-cloud-data-synced', (e) => {
         const { classes, tasks } = e.detail || {};
         if (classes) {
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
+            localStorage.setItem('obsidian_backup_classes', JSON.stringify(classes));
         }
         if (tasks) {
             localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
+            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(tasks));
         }
-        renderClassesList();
-        renderTasksList();
-        renderDashboardSchedule();
-        renderPriorityTasks();
-        renderNotifications();
-        updateProgressMetrics();
-        updateDashboardCounters();
+        refreshAllViews();
     });
 
     // Initial Engine Trigger
@@ -2143,4 +2090,5 @@ document.addEventListener('DOMContentLoaded', () => {
     updateAvatarImages();
     updateOperatorGreeting();
     updateAuthModalState();
+    refreshAllViews();
 });

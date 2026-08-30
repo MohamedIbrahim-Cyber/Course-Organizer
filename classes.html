@@ -246,16 +246,19 @@
                     <button type="button" class="btn-signout" id="btn-auth-signout" data-i18n="btn_signout">Sign Out of Terminal</button>
                 </div>
 
-                <!-- Logged Out (Auth Forms) View -->
+                <!-- Logged Out (Google Auth) View -->
                 <div id="auth-forms-view">
-                    <div class="auth-tabs-row">
-                        <button type="button" class="auth-tab-btn active" id="auth-tab-login" data-i18n="tab_login">Sign In</button>
-                        <button type="button" class="auth-tab-btn" id="auth-tab-register" data-i18n="tab_register">Create Account</button>
+                    <div class="auth-feature-box">
+                        <div class="auth-cloud-badge">
+                            <span class="sync-dot"></span>
+                            <span data-i18n="auth_sync_feature_title">Cloud Synchronization</span>
+                        </div>
+                        <p class="auth-feature-text" data-i18n="auth_modal_desc">Sign in with your Google account to sync all your classes, task objectives, schedules, and custom preferences securely in real time across all devices.</p>
                     </div>
 
                     <!-- One-Click Google Login -->
-                    <button type="button" class="btn-google-auth" id="btn-google-auth">
-                        <svg width="18" height="18" viewBox="0 0 24 24">
+                    <button type="button" class="btn-google-primary" id="btn-google-auth">
+                        <svg width="20" height="20" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
@@ -264,33 +267,13 @@
                         <span data-i18n="btn_google_signin">Continue with Google</span>
                     </button>
 
-                    <div class="auth-divider">
-                        <span data-i18n="auth_or">OR EMAIL TRANSMISSION</span>
+                    <!-- Redirect Fallback Option for Popup Blocker / Mobile -->
+                    <div style="text-align: center; margin-top: 0.85rem;">
+                        <button type="button" class="btn-auth-redirect" id="btn-google-redirect" data-i18n="btn_google_redirect">Having trouble with popup? Sign in with Page Redirect</button>
                     </div>
 
-                    <form id="auth-email-form">
-                        <div class="form-group" id="group-auth-name" style="display: none;">
-                            <label for="auth-input-name" data-i18n="label_operator_name">Architect Name / Call-Sign</label>
-                            <input type="text" id="auth-input-name" placeholder="e.g. Architect Ibrahim">
-                        </div>
-                        <div class="form-group">
-                            <label for="auth-input-email" data-i18n="form_email">Email:</label>
-                            <input type="email" id="auth-input-email" placeholder="architect@terminal.io" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="auth-input-password" data-i18n="label_password">Password:</label>
-                            <input type="password" id="auth-input-password" placeholder="••••••••" required minlength="6">
-                        </div>
-                        
-                        <div class="modal-actions" style="margin-top: 1rem;">
-                            <button type="button" class="btn-secondary" id="auth-cancel-btn" data-i18n="btn_cancel">Cancel</button>
-                            <button type="submit" class="submit-btn" id="auth-submit-btn" style="width: auto; padding: 0.65rem 1.5rem;" data-i18n="btn_signin">Sign In</button>
-                        </div>
-                    </form>
-
-                    <div class="auth-footer-toggle">
-                        <span id="auth-toggle-text" data-i18n="auth_no_account">Need a terminal account?</span>
-                        <button type="button" class="auth-link-action" id="auth-toggle-action-btn" data-i18n="auth_create_one">Create one</button>
+                    <div class="modal-actions" style="margin-top: 1.25rem;">
+                        <button type="button" class="btn-secondary" id="auth-cancel-btn" style="width: 100%;" data-i18n="btn_cancel">Cancel</button>
                     </div>
                 </div>
             </div>
