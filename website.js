@@ -816,17 +816,33 @@ document.addEventListener('DOMContentLoaded', () => {
             isTodaySchedule = false;
         }
 
-        timelineContainer.innerHTML = '';
+        timelineContainer.textContent = '';
 
         if (displayClasses.length === 0) {
             const emptyDiv = document.createElement('div');
             emptyDiv.className = 'timeline-item';
-            emptyDiv.innerHTML = `
-                <div class="dot"></div>
-                <div class="card">
-                    <h1 style="font-size: 1.25rem; margin: 0;">${escapeHTML(t.no_classes_indexed)}</h1>
-                    <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">${escapeHTML(t.no_classes_indexed_sub)}</p>
-                </div>`;
+            
+            const dot = document.createElement('div');
+            dot.className = 'dot';
+            
+            const card = document.createElement('div');
+            card.className = 'card';
+            
+            const h1 = document.createElement('h1');
+            h1.style.fontSize = '1.25rem';
+            h1.style.margin = '0';
+            h1.textContent = t.no_classes_indexed;
+            
+            const p = document.createElement('p');
+            p.style.opacity = '0.5';
+            p.style.margin = '0';
+            p.style.fontSize = '0.9rem';
+            p.textContent = t.no_classes_indexed_sub;
+            
+            card.appendChild(h1);
+            card.appendChild(p);
+            emptyDiv.appendChild(dot);
+            emptyDiv.appendChild(card);
             timelineContainer.appendChild(emptyDiv);
             return;
         }
@@ -835,17 +851,36 @@ document.addEventListener('DOMContentLoaded', () => {
             const itemDiv = document.createElement('div');
             itemDiv.className = 'timeline-item';
             const isHighlight = isTodaySchedule && index === 0;
-            const dotClass = isHighlight ? 'dot active' : 'dot';
-            const cardClass = isHighlight ? 'card highlighted' : 'card';
+            
+            const dot = document.createElement('div');
+            dot.className = isHighlight ? 'dot active' : 'dot';
+            
+            const card = document.createElement('div');
+            card.className = isHighlight ? 'card highlighted' : 'card';
+            
+            const timeSpan = document.createElement('span');
+            timeSpan.className = 'time';
+            timeSpan.textContent = `${isTodaySchedule ? '' : `${classItem.parsed.day} • `}${classItem.parsed.startTime} - ${classItem.parsed.endTime}`;
+            
+            const titleH1 = document.createElement('h1');
+            titleH1.style.fontSize = '1.2rem';
+            titleH1.style.margin = '0.25rem 0 0 0';
+            titleH1.textContent = classItem.code ? `${classItem.title} (${classItem.code})` : classItem.title;
+            
+            card.appendChild(timeSpan);
+            card.appendChild(titleH1);
 
-            itemDiv.innerHTML = `
-                <div class="${dotClass}"></div>
-                <div class="${cardClass}">
-                    <span class="time">${isTodaySchedule ? '' : `${escapeHTML(classItem.parsed.day)} • `}${escapeHTML(classItem.parsed.startTime)} - ${escapeHTML(classItem.parsed.endTime)}</span>
-                    <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${escapeHTML(classItem.title)} ${classItem.code ? `(${escapeHTML(classItem.code)})` : ''}</h1>
-                    <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `${escapeHTML(t.instructor_label)}${escapeHTML(classItem.instructor)}` : ''}</p>
-                </div>
-            `;
+            if (classItem.instructor) {
+                const instP = document.createElement('p');
+                instP.style.opacity = '0.5';
+                instP.style.margin = '4px 0 0 0';
+                instP.style.fontSize = '0.85rem';
+                instP.textContent = `${t.instructor_label}${classItem.instructor}`;
+                card.appendChild(instP);
+            }
+
+            itemDiv.appendChild(dot);
+            itemDiv.appendChild(card);
             timelineContainer.appendChild(itemDiv);
         });
     }
@@ -856,17 +891,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
         const t = translations[currentLang];
-        tasksContainer.innerHTML = '';
+        tasksContainer.textContent = '';
 
         const validTasks = currentTasks.filter(Boolean);
 
         if (validTasks.length === 0) {
             const emptyCard = document.createElement('div');
             emptyCard.className = 'smallcard';
-            emptyCard.innerHTML = `
-                <h3 style="margin: 0;">${escapeHTML(t.no_tasks)}</h3>
-                <p style="opacity: 0.5; margin: 0; font-size: 0.85rem;">${escapeHTML(t.no_tasks_sub)}</p>
-            `;
+            
+            const h3 = document.createElement('h3');
+            h3.style.margin = '0';
+            h3.textContent = t.no_tasks;
+            
+            const p = document.createElement('p');
+            p.style.opacity = '0.5';
+            p.style.margin = '0';
+            p.style.fontSize = '0.85rem';
+            p.textContent = t.no_tasks_sub;
+            
+            emptyCard.appendChild(h3);
+            emptyCard.appendChild(p);
             tasksContainer.appendChild(emptyCard);
             return;
         }
@@ -874,13 +918,38 @@ document.addEventListener('DOMContentLoaded', () => {
         validTasks.slice(0, 4).forEach(taskItem => {
             const cardDiv = document.createElement('div');
             cardDiv.className = 'smallcard';
-            cardDiv.innerHTML = `
-                <div>
-                    <h3 style="margin: 0; font-size: 1rem; ${taskItem.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${escapeHTML(taskItem.title)}</h3>
-                    <p style="opacity: 0.5; font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">${escapeHTML(taskItem.description || '')}</p>
-                </div>
-                <span style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">${escapeHTML(taskItem.date || '')}</span>
-            `;
+            
+            const infoDiv = document.createElement('div');
+            
+            const h3 = document.createElement('h3');
+            h3.style.margin = '0';
+            h3.style.fontSize = '1rem';
+            if (taskItem.completed) {
+                h3.style.textDecoration = 'line-through';
+                h3.style.opacity = '0.5';
+            }
+            h3.textContent = taskItem.title || '';
+            
+            const p = document.createElement('p');
+            p.style.opacity = '0.5';
+            p.style.fontSize = '0.85rem';
+            p.style.marginTop = '4px';
+            p.style.marginBottom = '0';
+            p.textContent = taskItem.description || '';
+            
+            infoDiv.appendChild(h3);
+            infoDiv.appendChild(p);
+            cardDiv.appendChild(infoDiv);
+
+            if (taskItem.date) {
+                const dateSpan = document.createElement('span');
+                dateSpan.style.fontSize = '0.85rem';
+                dateSpan.style.color = 'var(--primary)';
+                dateSpan.style.fontWeight = '600';
+                dateSpan.textContent = taskItem.date;
+                cardDiv.appendChild(dateSpan);
+            }
+
             tasksContainer.appendChild(cardDiv);
         });
     }
@@ -1000,7 +1069,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesDay && matchesSearch;
         });
 
-        classesListContainer.innerHTML = '';
+        classesListContainer.textContent = '';
 
         if (filtered.length === 0) {
             const emptyCard = document.createElement('div');
@@ -1008,7 +1077,13 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyCard.style.gridColumn = '1 / -1';
             emptyCard.style.textAlign = 'center';
             emptyCard.style.padding = '2rem';
-            emptyCard.innerHTML = `<p style="color: var(--text-muted); margin: 0;">${escapeHTML(t.no_classes_empty)}</p>`;
+            
+            const emptyP = document.createElement('p');
+            emptyP.style.color = 'var(--text-muted)';
+            emptyP.style.margin = '0';
+            emptyP.textContent = t.no_classes_empty;
+            
+            emptyCard.appendChild(emptyP);
             classesListContainer.appendChild(emptyCard);
             return;
         }
@@ -1016,21 +1091,66 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered.forEach((item) => {
             const itemId = item.id || ('cls_' + Math.random().toString(36).slice(2, 8));
             item.id = itemId;
+
             const card = document.createElement('article');
             card.className = 'card';
             card.dataset.id = itemId;
-            card.innerHTML = `
-                <div class="card-header-flex">
-                    <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem;">${escapeHTML(item.title)}</h3>
-                    ${item.code ? `<span style="color: var(--primary); font-size: 0.85rem; font-weight: 700;">${escapeHTML(item.code)}</span>` : ''}
-                </div>
-                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `${escapeHTML(t.instructor_label)}${escapeHTML(item.instructor)}` : `${escapeHTML(t.instructor_label)}${escapeHTML(t.not_assigned)}`}</p>
-                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">${escapeHTML(item.date || t.no_schedule_set)}</p>
-                <div class="card-actions">
-                    <button class="edit-btn" data-action="edit-class" data-id="${itemId}">${escapeHTML(t.btn_edit)}</button>
-                    <button class="delete-btn" data-action="delete-class" data-id="${itemId}">${escapeHTML(t.btn_delete)}</button>
-                </div>
-            `;
+
+            const headerFlex = document.createElement('div');
+            headerFlex.className = 'card-header-flex';
+
+            const titleEl = document.createElement('h3');
+            titleEl.style.margin = '0';
+            titleEl.style.color = 'var(--text-main)';
+            titleEl.style.fontSize = '1.1rem';
+            titleEl.textContent = item.title || '';
+            headerFlex.appendChild(titleEl);
+
+            if (item.code) {
+                const codeSpan = document.createElement('span');
+                codeSpan.style.color = 'var(--primary)';
+                codeSpan.style.fontSize = '0.85rem';
+                codeSpan.style.fontWeight = '700';
+                codeSpan.textContent = item.code;
+                headerFlex.appendChild(codeSpan);
+            }
+            card.appendChild(headerFlex);
+
+            const instructorP = document.createElement('p');
+            instructorP.style.margin = '0';
+            instructorP.style.fontSize = '0.9rem';
+            instructorP.style.color = 'var(--text-muted)';
+            instructorP.textContent = item.instructor 
+                ? `${t.instructor_label}${item.instructor}` 
+                : `${t.instructor_label}${t.not_assigned}`;
+            card.appendChild(instructorP);
+
+            const dateP = document.createElement('p');
+            dateP.style.margin = '0';
+            dateP.style.fontSize = '0.85rem';
+            dateP.style.color = 'var(--text-muted)';
+            dateP.textContent = item.date || t.no_schedule_set;
+            card.appendChild(dateP);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'card-actions';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-btn';
+            editBtn.dataset.action = 'edit-class';
+            editBtn.dataset.id = itemId;
+            editBtn.textContent = t.btn_edit;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.dataset.action = 'delete-class';
+            deleteBtn.dataset.id = itemId;
+            deleteBtn.textContent = t.btn_delete;
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            card.appendChild(actionsDiv);
+
             classesListContainer.appendChild(card);
         });
     }
@@ -1055,7 +1175,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return matchesStatus && matchesSearch;
         });
 
-        tasksListContainer.innerHTML = '';
+        tasksListContainer.textContent = '';
 
         if (filtered.length === 0) {
             const emptyTask = document.createElement('div');
@@ -1063,7 +1183,13 @@ document.addEventListener('DOMContentLoaded', () => {
             emptyTask.style.textAlign = 'center';
             emptyTask.style.padding = '2rem';
             emptyTask.style.justifyContent = 'center';
-            emptyTask.innerHTML = `<p style="color: var(--text-muted); margin: 0;">${escapeHTML(t.no_tasks_empty)}</p>`;
+            
+            const emptyP = document.createElement('p');
+            emptyP.style.color = 'var(--text-muted)';
+            emptyP.style.margin = '0';
+            emptyP.textContent = t.no_tasks_empty;
+            
+            emptyTask.appendChild(emptyP);
             tasksListContainer.appendChild(emptyTask);
             return;
         }
@@ -1071,23 +1197,72 @@ document.addEventListener('DOMContentLoaded', () => {
         filtered.forEach((task) => {
             const taskId = task.id || ('tsk_' + Math.random().toString(36).slice(2, 8));
             task.id = taskId;
+
             const taskCard = document.createElement('div');
             taskCard.className = `task-item ${task.completed ? 'completed' : ''}`;
             taskCard.dataset.id = taskId;
-            taskCard.innerHTML = `
-                <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
-                    <input type="checkbox" class="task-checkbox" data-id="${taskId}" ${task.completed ? 'checked' : ''}>
-                    <div style="flex: 1;">
-                        <h3 style="margin: 0 0 0.35rem 0; ${task.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHTML(task.title)}</h3>
-                        <p style="margin: 0 0 0.35rem 0; font-size: 0.85rem;">${escapeHTML(task.description || t.no_desc)}</p>
-                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${escapeHTML(t.due_label)}${escapeHTML(task.date || t.no_date_set)}</span>
-                    </div>
-                </div>
-                <div class="card-actions" style="margin-top: 0;">
-                    <button class="edit-btn" data-action="edit-task" data-id="${taskId}">${escapeHTML(t.btn_edit)}</button>
-                    <button class="delete-btn" data-action="delete-task" data-id="${taskId}">${escapeHTML(t.btn_delete)}</button>
-                </div>
-            `;
+
+            const mainFlex = document.createElement('div');
+            mainFlex.style.display = 'flex';
+            mainFlex.style.alignItems = 'center';
+            mainFlex.style.gap = '1rem';
+            mainFlex.style.width = '100%';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'task-checkbox';
+            checkbox.dataset.id = taskId;
+            checkbox.checked = Boolean(task.completed);
+            mainFlex.appendChild(checkbox);
+
+            const contentDiv = document.createElement('div');
+            contentDiv.style.flex = '1';
+
+            const titleEl = document.createElement('h3');
+            titleEl.style.margin = '0 0 0.35rem 0';
+            if (task.completed) {
+                titleEl.style.textDecoration = 'line-through';
+                titleEl.style.opacity = '0.6';
+            }
+            titleEl.textContent = task.title || '';
+            contentDiv.appendChild(titleEl);
+
+            const descEl = document.createElement('p');
+            descEl.style.margin = '0 0 0.35rem 0';
+            descEl.style.fontSize = '0.85rem';
+            descEl.textContent = task.description || t.no_desc;
+            contentDiv.appendChild(descEl);
+
+            const dueSpan = document.createElement('span');
+            dueSpan.style.fontSize = '0.75rem';
+            dueSpan.style.color = 'var(--primary)';
+            dueSpan.style.fontWeight = '600';
+            dueSpan.textContent = `${t.due_label}${task.date || t.no_date_set}`;
+            contentDiv.appendChild(dueSpan);
+
+            mainFlex.appendChild(contentDiv);
+            taskCard.appendChild(mainFlex);
+
+            const actionsDiv = document.createElement('div');
+            actionsDiv.className = 'card-actions';
+            actionsDiv.style.marginTop = '0';
+
+            const editBtn = document.createElement('button');
+            editBtn.className = 'edit-btn';
+            editBtn.dataset.action = 'edit-task';
+            editBtn.dataset.id = taskId;
+            editBtn.textContent = t.btn_edit;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.dataset.action = 'delete-task';
+            deleteBtn.dataset.id = taskId;
+            deleteBtn.textContent = t.btn_delete;
+
+            actionsDiv.appendChild(editBtn);
+            actionsDiv.appendChild(deleteBtn);
+            taskCard.appendChild(actionsDiv);
+
             tasksListContainer.appendChild(taskCard);
         });
     }
@@ -1130,18 +1305,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(t.toast_class_deleted);
             } else if (target.dataset.action === 'edit-class' && item) {
                 const card = target.closest('.card');
-                card.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                        <input type="text" id="edit-class-title-${targetId}" value="${escapeHTML(item.title)}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_title)}">
-                        <input type="text" id="edit-class-code-${targetId}" value="${escapeHTML(item.code || '')}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_code)}">
-                        <input type="text" id="edit-class-instructor-${targetId}" value="${escapeHTML(item.instructor || '')}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_instructor)}">
-                        <input type="text" id="edit-class-date-${targetId}" value="${escapeHTML(item.date || '')}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM - HH:MM">
-                        <div class="card-actions">
-                            <button class="edit-btn" data-action="save-class" data-id="${targetId}">${escapeHTML(t.btn_save)}</button>
-                            <button class="delete-btn" data-action="cancel-class" data-id="${targetId}">${escapeHTML(t.btn_cancel)}</button>
-                        </div>
-                    </div>
-                `;
+                card.textContent = '';
+
+                const formContainer = document.createElement('div');
+                formContainer.style.display = 'flex';
+                formContainer.style.flexDirection = 'column';
+                formContainer.style.gap = '0.5rem';
+                formContainer.style.width = '100%';
+
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.id = `edit-class-title-${targetId}`;
+                titleInput.value = item.title || '';
+                titleInput.className = 'class-input';
+                titleInput.style.padding = '0.4rem';
+                titleInput.placeholder = t.label_class_title;
+
+                const codeInput = document.createElement('input');
+                codeInput.type = 'text';
+                codeInput.id = `edit-class-code-${targetId}`;
+                codeInput.value = item.code || '';
+                codeInput.className = 'class-input';
+                codeInput.style.padding = '0.4rem';
+                codeInput.placeholder = t.label_class_code;
+
+                const instructorInput = document.createElement('input');
+                instructorInput.type = 'text';
+                instructorInput.id = `edit-class-instructor-${targetId}`;
+                instructorInput.value = item.instructor || '';
+                instructorInput.className = 'class-input';
+                instructorInput.style.padding = '0.4rem';
+                instructorInput.placeholder = t.label_class_instructor;
+
+                const dateInput = document.createElement('input');
+                dateInput.type = 'text';
+                dateInput.id = `edit-class-date-${targetId}`;
+                dateInput.value = item.date || '';
+                dateInput.className = 'class-input';
+                dateInput.style.padding = '0.4rem';
+                dateInput.placeholder = 'Day, HH:MM - HH:MM';
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'card-actions';
+
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'edit-btn';
+                saveBtn.dataset.action = 'save-class';
+                saveBtn.dataset.id = targetId;
+                saveBtn.textContent = t.btn_save;
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'delete-btn';
+                cancelBtn.dataset.action = 'cancel-class';
+                cancelBtn.dataset.id = targetId;
+                cancelBtn.textContent = t.btn_cancel;
+
+                actionsDiv.appendChild(saveBtn);
+                actionsDiv.appendChild(cancelBtn);
+
+                formContainer.appendChild(titleInput);
+                formContainer.appendChild(codeInput);
+                formContainer.appendChild(instructorInput);
+                formContainer.appendChild(dateInput);
+                formContainer.appendChild(actionsDiv);
+
+                card.appendChild(formContainer);
             } else if (target.dataset.action === 'save-class' && item) {
                 const titleInput = document.getElementById(`edit-class-title-${targetId}`);
                 const codeInput = document.getElementById(`edit-class-code-${targetId}`);
@@ -1192,17 +1420,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(t.toast_task_deleted);
             } else if (target.dataset.action === 'edit-task' && item) {
                 const taskCard = target.closest('.task-item');
-                taskCard.innerHTML = `
-                    <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                        <input type="text" id="edit-task-title-${targetId}" value="${escapeHTML(item.title)}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_task_title)}">
-                        <textarea id="edit-task-desc-${targetId}" class="contact-textarea" style="padding: 0.4rem; height: 60px;" placeholder="${escapeHTML(t.label_task_desc)}">${escapeHTML(item.description || '')}</textarea>
-                        <input type="text" id="edit-task-date-${targetId}" value="${escapeHTML(item.date || '')}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM">
-                        <div class="card-actions">
-                            <button class="edit-btn" data-action="save-task" data-id="${targetId}">${escapeHTML(t.btn_save)}</button>
-                            <button class="delete-btn" data-action="cancel-task" data-id="${targetId}">${escapeHTML(t.btn_cancel)}</button>
-                        </div>
-                    </div>
-                `;
+                taskCard.textContent = '';
+
+                const formContainer = document.createElement('div');
+                formContainer.style.display = 'flex';
+                formContainer.style.flexDirection = 'column';
+                formContainer.style.gap = '0.5rem';
+                formContainer.style.width = '100%';
+
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.id = `edit-task-title-${targetId}`;
+                titleInput.value = item.title || '';
+                titleInput.className = 'class-input';
+                titleInput.style.padding = '0.4rem';
+                titleInput.placeholder = t.label_task_title;
+
+                const descInput = document.createElement('textarea');
+                descInput.id = `edit-task-desc-${targetId}`;
+                descInput.value = item.description || '';
+                descInput.className = 'contact-textarea';
+                descInput.style.padding = '0.4rem';
+                descInput.style.height = '60px';
+                descInput.placeholder = t.label_task_desc;
+
+                const dateInput = document.createElement('input');
+                dateInput.type = 'text';
+                dateInput.id = `edit-task-date-${targetId}`;
+                dateInput.value = item.date || '';
+                dateInput.className = 'class-input';
+                dateInput.style.padding = '0.4rem';
+                dateInput.placeholder = 'Day, HH:MM';
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'card-actions';
+
+                const saveBtn = document.createElement('button');
+                saveBtn.className = 'edit-btn';
+                saveBtn.dataset.action = 'save-task';
+                saveBtn.dataset.id = targetId;
+                saveBtn.textContent = t.btn_save;
+
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'delete-btn';
+                cancelBtn.dataset.action = 'cancel-task';
+                cancelBtn.dataset.id = targetId;
+                cancelBtn.textContent = t.btn_cancel;
+
+                actionsDiv.appendChild(saveBtn);
+                actionsDiv.appendChild(cancelBtn);
+
+                formContainer.appendChild(titleInput);
+                formContainer.appendChild(descInput);
+                formContainer.appendChild(dateInput);
+                formContainer.appendChild(actionsDiv);
+
+                taskCard.appendChild(formContainer);
             } else if (target.dataset.action === 'save-task' && item) {
                 const titleInput = document.getElementById(`edit-task-title-${targetId}`);
                 const descInput = document.getElementById(`edit-task-desc-${targetId}`);
@@ -1504,14 +1777,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-        notifList.innerHTML = '';
+        notifList.textContent = '';
 
         const dismissedHash = localStorage.getItem('obsidian_notifs_dismissed_hash');
         const currentAlertsHash = alertIdList.sort().join('|');
 
         if (dismissedHash === currentAlertsHash && alerts.length > 0) {
             if (bellBadge) bellBadge.classList.add('hidden');
-            notifList.innerHTML = `<p class="notif-empty">${escapeHTML(t.notif_empty)}</p>`;
+            const emptyP = document.createElement('p');
+            emptyP.className = 'notif-empty';
+            emptyP.textContent = t.notif_empty;
+            notifList.appendChild(emptyP);
             return;
         }
 
@@ -1525,17 +1801,27 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (alerts.length === 0) {
-            notifList.innerHTML = `<p class="notif-empty">${escapeHTML(t.notif_empty)}</p>`;
+            const emptyP = document.createElement('p');
+            emptyP.className = 'notif-empty';
+            emptyP.textContent = t.notif_empty;
+            notifList.appendChild(emptyP);
             return;
         }
 
         alerts.forEach(alert => {
             const item = document.createElement('div');
             item.className = `notif-item ${alert.type === 'class' ? 'class-item' : ''} ${alert.urgent ? 'urgent' : ''}`;
-            item.innerHTML = `
-                <span class="notif-title">${escapeHTML(alert.title)}</span>
-                <span class="notif-sub">${escapeHTML(alert.sub)}</span>
-            `;
+            
+            const titleSpan = document.createElement('span');
+            titleSpan.className = 'notif-title';
+            titleSpan.textContent = alert.title;
+            
+            const subSpan = document.createElement('span');
+            subSpan.className = 'notif-sub';
+            subSpan.textContent = alert.sub;
+            
+            item.appendChild(titleSpan);
+            item.appendChild(subSpan);
             notifList.appendChild(item);
         });
     }

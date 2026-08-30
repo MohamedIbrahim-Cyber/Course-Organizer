@@ -12,10 +12,36 @@ const PORT = 3000;
 // Trust proxy for accurate client IP resolution behind Cloud Run / Vercel / Nginx
 app.set('trust proxy', 1);
 
+// Global baseline rate limiter (Applied globally & explicitly to all routes)
+const globalRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // Standard request budget per 15 minutes
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Too many requests from this IP address. Please try again after 15 minutes.'
+  }
+});
+
+// Strict per-IP rate limiter for sensitive/API endpoints (Max 5 requests per 15 minutes)
+const contactRateLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    error: 'Transmission rate limit exceeded. You may only send 5 messages every 15 minutes.'
+  }
+});
+
+// Apply global rate limiting before all route processing
+app.use(globalRateLimiter);
+
 // Security & MIME-type hardening middleware
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
   // Content Security Policy allowing Google Fonts, Cloudflare Turnstile, and local assets
@@ -26,35 +52,46 @@ app.use((req, res, next) => {
   next();
 });
 
+// Sensitive file access blocking middleware (Prevents exposure of sensitive files & dotfiles)
+app.use((req, res, next) => {
+  const normalizedPath = req.path.toLowerCase();
+  
+  // Explicitly deny hidden files, configuration, environment files, source code, and metadata
+  if (
+    normalizedPath.startsWith('/.') ||
+    normalizedPath === '/server.js' ||
+    normalizedPath === '/package.json' ||
+    normalizedPath === '/metadata.json' ||
+    normalizedPath === '/vercel.json' ||
+    normalizedPath.endsWith('.env') ||
+    normalizedPath.endsWith('.md') ||
+    normalizedPath.endsWith('.json') ||
+    normalizedPath.endsWith('.ts') ||
+    normalizedPath.endsWith('.map') ||
+    normalizedPath.includes('..')
+  ) {
+    return res.status(404).type('text/plain').send('Not Found');
+  }
+  next();
+});
+
 // Strict body payload limit (10kb prevents JSON bomb memory allocation)
 app.use(express.json({ limit: '10kb' }));
 
-// Static asset caching & delivery
+// Dedicated static photo assets directory (restricted, dotfiles denied)
 app.use('/photos', express.static(path.join(__dirname, 'photos'), {
+  dotfiles: 'ignore',
   maxAge: '1d'
 }));
 
-app.use(express.static(__dirname, {
-  dotfiles: 'ignore',
-  setHeaders: (res, filePath) => {
-    if (filePath.endsWith('.css')) {
-      res.setHeader('Content-Type', 'text/css; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    } else if (filePath.endsWith('.js')) {
-      res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
-      res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    }
-  }
-}));
-
-// Explicit static route handlers
-app.get('/style.css', (req, res) => {
+// Explicit static route handlers with rate limiting and security headers
+app.get('/style.css', globalRateLimiter, (req, res) => {
   res.setHeader('Content-Type', 'text/css; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'style.css'));
 });
 
-app.get('/website.js', (req, res) => {
+app.get('/website.js', globalRateLimiter, (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   res.sendFile(path.join(__dirname, 'website.js'));
@@ -63,17 +100,6 @@ app.get('/website.js', (req, res) => {
 // --------------------------------------------------------------------------
 // TASK 1: Hardened Contact Relay Endpoint & Bot Defense
 // --------------------------------------------------------------------------
-
-// Strict Per-IP Rate Limiting: Max 3 requests per 15 minutes
-const contactRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 3,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    error: 'Transmission rate limit exceeded. You may only send 3 messages every 15 minutes.'
-  }
-});
 
 // Helper: Origin & Referer Verification
 function validateOrigin(req) {
@@ -92,9 +118,13 @@ function validateOrigin(req) {
 
   // If origin is present, ensure it matches allowed hosts
   if (origin) {
-    const originHostname = new URL(origin).host.toLowerCase();
-    const isAllowed = allowedOrigins.some(allowed => originHostname === allowed || origin.toLowerCase().includes(allowed));
-    if (!isAllowed) return false;
+    try {
+      const originHostname = new URL(origin).host.toLowerCase();
+      const isAllowed = allowedOrigins.some(allowed => originHostname === allowed || origin.toLowerCase().includes(allowed));
+      if (!isAllowed) return false;
+    } catch {
+      return false;
+    }
   }
 
   // If referer is present, verify host
@@ -266,26 +296,26 @@ app.post('/api/contact', contactRateLimiter, async (req, res) => {
   }
 });
 
-// Clean URL handlers
-app.get(['/classes', '/classes.html'], (req, res) => {
+// Explicit Clean URL handlers with rate limiting
+app.get(['/classes', '/classes.html'], globalRateLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'classes.html'));
 });
 
-app.get(['/add-class', '/add%20class.html', '/add class.html'], (req, res) => {
+app.get(['/add-class', '/add%20class.html', '/add class.html'], globalRateLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'add class.html'));
 });
 
-app.get(['/contact', '/contact-us', '/contact%20us.html', '/contact us.html'], (req, res) => {
+app.get(['/contact', '/contact-us', '/contact%20us.html', '/contact us.html'], globalRateLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'contact us.html'));
 });
 
-app.get(['/', '/index.html', '/home'], (req, res) => {
+app.get(['/', '/index.html', '/home'], globalRateLimiter, (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-app.get('*', (req, res) => {
+app.get('*', globalRateLimiter, (req, res) => {
   if (req.path.includes('.') && !req.path.endsWith('.html')) {
-    return res.status(404).send('Asset not found');
+    return res.status(404).type('text/plain').send('Asset not found');
   }
   res.sendFile(path.join(__dirname, 'index.html'));
 });
