@@ -1,43 +1,57 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { initializeApp } from 'https://esm.sh/firebase@10.8.0/app';
+import { 
+    getAuth, 
+    signInWithPopup, 
+    GoogleAuthProvider, 
+    signInWithEmailAndPassword, 
+    createUserWithEmailAndPassword, 
+    sendPasswordResetEmail,
+    signOut, 
+    onAuthStateChanged 
+} from 'https://esm.sh/firebase@10.8.0/auth';
+import { 
+    getFirestore, 
+    doc, 
+    getDoc, 
+    setDoc, 
+    collection, 
+    getDocs, 
+    addDoc, 
+    updateDoc, 
+    deleteDoc, 
+    getDocFromServer,
+    serverTimestamp 
+} from 'https://esm.sh/firebase@10.8.0/firestore';
+import firebaseConfig from './firebase-applet-config.json';
 
-// Default Supabase config (placeholder / empty, user can input their own in settings or config)
-const defaultSupabaseConfig = {
-    supabaseUrl: "https://iaftsszffdgetrgpjomq.supabase.co",
-    supabaseAnonKey: "sb_publishable_SSB7I44SbPyccx-cd0QbEQ_b4x-bXQy"
-};
-
-let activeConfig = defaultSupabaseConfig;
+let activeConfig = firebaseConfig;
 try {
-    const customConfigRaw = localStorage.getItem('obsidian_custom_supabase_config');
-    if (customConfigRaw) {
-        const parsed = JSON.parse(customConfigRaw);
-        if (parsed) {
-            activeConfig = { 
-                supabaseUrl: parsed.supabaseUrl || defaultSupabaseConfig.supabaseUrl,
-                supabaseAnonKey: parsed.supabaseAnonKey || defaultSupabaseConfig.supabaseAnonKey
-            };
+    const customStored = localStorage.getItem('obsidian_custom_firebase_config');
+    if (customStored) {
+        const parsed = JSON.parse(customStored);
+        if (parsed && parsed.apiKey && parsed.projectId) {
+            activeConfig = parsed;
         }
-    } else {
-        // Automatically store initial config with the provided URL and key
-        localStorage.setItem('obsidian_custom_supabase_config', JSON.stringify(defaultSupabaseConfig));
     }
-} catch (e) {
-    console.warn("Custom Supabase config parse notice:", e);
-}
+} catch {}
 
-// Initialize Supabase Client if configured
-let supabase = null;
-if (activeConfig.supabaseUrl && activeConfig.supabaseAnonKey) {
+const app = initializeApp(activeConfig);
+export const db = getFirestore(app, activeConfig.firestoreDatabaseId || '(default)');
+export const auth = getAuth(app);
+
+// Test connection on boot
+async function testConnection() {
     try {
-        supabase = createClient(activeConfig.supabaseUrl, activeConfig.supabaseAnonKey);
-    } catch (e) {
-        console.warn("Failed to initialize Supabase client:", e);
+        await getDocFromServer(doc(db, 'test', 'connection'));
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('the client is offline')) {
+            console.error("Please check your Firebase configuration.");
+        }
     }
 }
+testConnection();
 
-// Default Academic Dataset for Fresh Initialization
 const DEFAULT_INITIAL_CLASSES = [];
-
 const DEFAULT_INITIAL_TASKS = [
     {
         id: 'tsk_def_1',
@@ -67,7 +81,7 @@ function getLocalArray(key, fallback = []) {
         const stored = localStorage.getItem(key);
         if (!stored) return fallback;
         const parsed = JSON.parse(stored);
-        return Array.isArray(parsed) && parsed.length > 0 ? parsed : fallback;
+        return Array.isArray(parsed) ? parsed : fallback;
     } catch {
         return fallback;
     }
@@ -81,160 +95,167 @@ if (getLocalArray('obsidianTasks', []).length === 0) {
     localStorage.setItem('obsidianTasks', JSON.stringify(DEFAULT_INITIAL_TASKS));
 }
 
-// Expose ObsidianAuth interface to window for website.js compatibility
+const googleProvider = new GoogleAuthProvider();
+
 window.ObsidianAuth = {
-    supabase,
+    auth,
     currentUser: null,
     isCloudSynced: false,
-    syncStatus: 'offline', // 'synced', 'guest', 'offline'
+    syncStatus: 'guest',
     isMigrating: false,
 
-    async signInWithEmail(email, password) {
-        if (!supabase) {
-            throw new Error("Supabase is not configured.");
-        }
-        const { data, error } = await supabase.auth.signInWithPassword({
-            email,
-            password
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    async signUpWithEmail(email, password) {
-        if (!supabase) {
-            throw new Error("Supabase is not configured.");
-        }
-        const { data, error } = await supabase.auth.signUp({
-            email,
-            password
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    async sendMagicLink(email) {
-        if (!supabase) {
-            throw new Error("Supabase is not configured.");
-        }
-        const { data, error } = await supabase.auth.signInWithOtp({
-            email,
-            options: {
-                emailRedirectTo: window.location.origin + window.location.pathname
-            }
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    async loginWithGoogle() {
-        if (!supabase) {
-            throw new Error("Supabase is not configured. Please enter your Supabase URL & Anon Key in the terminal settings below.");
-        }
-        const { data, error } = await supabase.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-                redirectTo: window.location.origin + window.location.pathname
-            }
-        });
-        if (error) throw error;
-        return data;
-    },
-
-    async loginWithGoogleRedirect() {
-        return this.loginWithGoogle();
-    },
-
     async signInWithGoogle() {
-        return this.loginWithGoogle();
+        try {
+            const result = await signInWithPopup(auth, googleProvider);
+            return result.user;
+        } catch (err) {
+            console.error("Google sign in error:", err);
+            throw err;
+        }
     },
 
     async signInWithGoogleRedirect() {
-        return this.loginWithGoogleRedirect();
+        return this.signInWithGoogle();
+    },
+
+    async loginWithGoogle() {
+        return this.signInWithGoogle();
+    },
+
+    async loginWithGoogleRedirect() {
+        return this.signInWithGoogle();
+    },
+
+    async signInWithEmail(email, password) {
+        try {
+            const result = await signInWithEmailAndPassword(auth, email, password);
+            return result.user;
+        } catch (err) {
+            console.error("Email sign in error:", err);
+            throw err;
+        }
+    },
+
+    async signUpWithEmail(email, password) {
+        try {
+            const result = await createUserWithEmailAndPassword(auth, email, password);
+            return result.user;
+        } catch (err) {
+            console.error("Email sign up error:", err);
+            throw err;
+        }
+    },
+
+    async sendMagicLink(email) {
+        try {
+            await sendPasswordResetEmail(auth, email);
+            return true;
+        } catch (err) {
+            console.error("Password reset / magic link error:", err);
+            throw err;
+        }
     },
 
     async logout() {
-        if (supabase) {
-            await supabase.auth.signOut();
+        try {
+            await signOut(auth);
+            this.currentUser = null;
+            this.isCloudSynced = false;
+            this.syncStatus = 'guest';
+            window.dispatchEvent(new CustomEvent('obsidian-auth-state-changed', { detail: { user: null } }));
+            window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
+        } catch (err) {
+            console.error("Sign out error:", err);
+            throw err;
         }
-        this.currentUser = null;
-        this.isCloudSynced = false;
-        this.syncStatus = 'guest';
-        window.dispatchEvent(new CustomEvent('obsidian-auth-state-changed', { detail: { user: null } }));
-        window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
     },
 
     async signOut() {
         return this.logout();
     },
 
-    getCurrentHostname() {
-        return window.location.hostname || 'localhost';
-    },
-
     getActiveConfig() {
-        return { ...activeConfig };
+        try {
+            const stored = localStorage.getItem('obsidian_custom_firebase_config');
+            if (stored) return JSON.parse(stored);
+        } catch {}
+        return firebaseConfig;
     },
 
     saveCustomConfig(configObj) {
-        try {
-            if (typeof configObj === 'string') {
-                configObj = JSON.parse(configObj);
-            }
-            if (!configObj.supabaseUrl || !configObj.supabaseAnonKey) {
-                throw new Error("Configuration must contain at least supabaseUrl and supabaseAnonKey.");
-            }
-            localStorage.setItem('obsidian_custom_supabase_config', JSON.stringify(configObj));
+        localStorage.setItem('obsidian_custom_firebase_config', JSON.stringify(configObj));
+        setTimeout(() => {
             window.location.reload();
-            return true;
-        } catch (e) {
-            console.error("Failed to save custom Supabase config:", e);
-            throw e;
-        }
+        }, 500);
     },
 
     resetToDefaultConfig() {
-        localStorage.removeItem('obsidian_custom_supabase_config');
-        window.location.reload();
+        localStorage.removeItem('obsidian_custom_firebase_config');
+        setTimeout(() => {
+            window.location.reload();
+        }, 500);
     },
 
     async syncUserCloudData(userId) {
-        if (!supabase || !userId) return;
+        if (!userId) return;
         this.isMigrating = true;
         try {
-            const { data: vaultData } = await supabase
-                .from('obsidian_vaults')
-                .select('*')
-                .eq('user_id', userId)
-                .single();
-
-            let classesList = getLocalArray('obsidianClasses', DEFAULT_INITIAL_CLASSES);
-            let tasksList = getLocalArray('obsidianTasks', DEFAULT_INITIAL_TASKS);
-
-            if (vaultData) {
-                if (vaultData.classes && Array.isArray(vaultData.classes) && vaultData.classes.length > 0) {
-                    classesList = vaultData.classes;
-                }
-                if (vaultData.tasks && Array.isArray(vaultData.tasks) && vaultData.tasks.length > 0) {
-                    tasksList = vaultData.tasks;
-                }
-                if (vaultData.operator_name) {
-                    localStorage.setItem('obsidian_operator_name', vaultData.operator_name);
-                }
-                if (vaultData.avatar) {
-                    localStorage.setItem('obsidian_avatar', vaultData.avatar);
-                }
-            } else {
+            // Fetch user profile
+            const userDocRef = doc(db, 'users', userId);
+            const userDoc = await getDoc(userDocRef);
+            if (!userDoc.exists()) {
                 const operatorName = localStorage.getItem('obsidian_operator_name') || 'Architect';
                 const avatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
-                await supabase.from('obsidian_vaults').upsert({
-                    user_id: userId,
-                    operator_name: operatorName,
-                    avatar: avatar,
-                    classes: classesList,
-                    tasks: tasksList,
-                    updated_at: new Date().toISOString()
+                await setDoc(userDocRef, {
+                    id: userId,
+                    email: this.currentUser?.email || '',
+                    operatorName,
+                    avatar,
+                    updatedAt: new Date().toISOString()
                 });
+            } else {
+                const data = userDoc.data();
+                if (data.operatorName) localStorage.setItem('obsidian_operator_name', data.operatorName);
+                if (data.avatar) localStorage.setItem('obsidian_avatar', data.avatar);
+            }
+
+            // Fetch classes from /users/{userId}/classes
+            const classesColRef = collection(db, 'users', userId, 'classes');
+            const classesSnapshot = await getDocs(classesColRef);
+            let classesList = [];
+            classesSnapshot.forEach(d => {
+                classesList.push({ id: d.id, ...d.data() });
+            });
+
+            // Fetch tasks from /users/{userId}/tasks
+            const tasksColRef = collection(db, 'users', userId, 'tasks');
+            const tasksSnapshot = await getDocs(tasksColRef);
+            let tasksList = [];
+            tasksSnapshot.forEach(d => {
+                tasksList.push({ id: d.id, ...d.data() });
+            });
+
+            if (classesList.length === 0) {
+                // If cloud is empty, upload local items linked to user
+                const localClasses = getLocalArray('obsidianClasses', []);
+                for (const cls of localClasses) {
+                    const { id, ...clsData } = cls;
+                    await addDoc(classesColRef, { ...clsData, userId, createdAt: clsData.createdAt || new Date().toISOString() });
+                }
+                const refetchClasses = await getDocs(classesColRef);
+                classesList = [];
+                refetchClasses.forEach(d => classesList.push({ id: d.id, ...d.data() }));
+            }
+
+            if (tasksList.length === 0) {
+                const localTasks = getLocalArray('obsidianTasks', DEFAULT_INITIAL_TASKS);
+                for (const tsk of localTasks) {
+                    const { id, ...tskData } = tsk;
+                    await addDoc(tasksColRef, { ...tskData, userId, createdAt: tskData.createdAt || new Date().toISOString() });
+                }
+                const refetchTasks = await getDocs(tasksColRef);
+                tasksList = [];
+                refetchTasks.forEach(d => tasksList.push({ id: d.id, ...d.data() }));
             }
 
             localStorage.setItem('obsidianClasses', JSON.stringify(classesList));
@@ -245,44 +266,35 @@ window.ObsidianAuth = {
                 detail: { classes: classesList, tasks: tasksList }
             }));
         } catch (err) {
-            console.warn("Supabase vault sync notice (table may need creation):", err);
+            console.error("Failed to sync user cloud data:", err);
         } finally {
             this.isMigrating = false;
         }
     },
 
-    async saveCloudVault() {
-        if (!supabase || !this.currentUser) return;
-        try {
-            const userId = this.currentUser.id;
-            const classes = getLocalArray('obsidianClasses', []);
-            const tasks = getLocalArray('obsidianTasks', []);
-            const operatorName = localStorage.getItem('obsidian_operator_name') || 'Architect';
-            const avatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
-
-            await supabase.from('obsidian_vaults').upsert({
-                user_id: userId,
-                operator_name: operatorName,
-                avatar: avatar,
-                classes,
-                tasks,
-                updated_at: new Date().toISOString()
-            });
-        } catch (err) {
-            console.warn("Failed to save vault to Supabase:", err);
-        }
-    },
-
     async addClass(classData) {
-        const classes = getLocalArray('obsidianClasses', []);
         const newClass = {
-            id: 'cls_' + Math.random().toString(36).substr(2, 9),
+            userId: this.currentUser ? this.currentUser.uid : 'guest',
             ...classData,
             createdAt: new Date().toISOString()
         };
+
+        if (this.currentUser) {
+            try {
+                const colRef = collection(db, 'users', this.currentUser.uid, 'classes');
+                const docRef = await addDoc(colRef, newClass);
+                newClass.id = docRef.id;
+            } catch (err) {
+                console.error("Failed to add class to Firestore:", err);
+                newClass.id = 'cls_' + Math.random().toString(36).substr(2, 9);
+            }
+        } else {
+            newClass.id = 'cls_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        const classes = getLocalArray('obsidianClasses', []);
         classes.push(newClass);
         localStorage.setItem('obsidianClasses', JSON.stringify(classes));
-        await this.saveCloudVault();
         window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
         return newClass.id;
     },
@@ -293,7 +305,15 @@ window.ObsidianAuth = {
         if (index !== -1) {
             classes[index] = { ...classes[index], ...updatedData, updatedAt: new Date().toISOString() };
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
-            await this.saveCloudVault();
+
+            if (this.currentUser) {
+                try {
+                    const docRef = doc(db, 'users', this.currentUser.uid, 'classes', classId);
+                    await updateDoc(docRef, { ...updatedData, updatedAt: new Date().toISOString() });
+                } catch (err) {
+                    console.error("Failed to update class in Firestore:", err);
+                }
+            }
             window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
         }
     },
@@ -302,20 +322,41 @@ window.ObsidianAuth = {
         let classes = getLocalArray('obsidianClasses', []);
         classes = classes.filter(c => c.id !== classId);
         localStorage.setItem('obsidianClasses', JSON.stringify(classes));
-        await this.saveCloudVault();
+
+        if (this.currentUser) {
+            try {
+                const docRef = doc(db, 'users', this.currentUser.uid, 'classes', classId);
+                await deleteDoc(docRef);
+            } catch (err) {
+                console.error("Failed to delete class from Firestore:", err);
+            }
+        }
         window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
     },
 
     async addTask(taskData) {
-        const tasks = getLocalArray('obsidianTasks', []);
         const newTask = {
-            id: 'tsk_' + Math.random().toString(36).substr(2, 9),
+            userId: this.currentUser ? this.currentUser.uid : 'guest',
             ...taskData,
             createdAt: new Date().toISOString()
         };
+
+        if (this.currentUser) {
+            try {
+                const colRef = collection(db, 'users', this.currentUser.uid, 'tasks');
+                const docRef = await addDoc(colRef, newTask);
+                newTask.id = docRef.id;
+            } catch (err) {
+                console.error("Failed to add task to Firestore:", err);
+                newTask.id = 'tsk_' + Math.random().toString(36).substr(2, 9);
+            }
+        } else {
+            newTask.id = 'tsk_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        const tasks = getLocalArray('obsidianTasks', []);
         tasks.push(newTask);
         localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
-        await this.saveCloudVault();
         window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
         return newTask.id;
     },
@@ -326,7 +367,15 @@ window.ObsidianAuth = {
         if (index !== -1) {
             tasks[index] = { ...tasks[index], ...updatedData, updatedAt: new Date().toISOString() };
             localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
-            await this.saveCloudVault();
+
+            if (this.currentUser) {
+                try {
+                    const docRef = doc(db, 'users', this.currentUser.uid, 'tasks', taskId);
+                    await updateDoc(docRef, { ...updatedData, updatedAt: new Date().toISOString() });
+                } catch (err) {
+                    console.error("Failed to update task in Firestore:", err);
+                }
+            }
             window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
         }
     },
@@ -335,38 +384,41 @@ window.ObsidianAuth = {
         let tasks = getLocalArray('obsidianTasks', []);
         tasks = tasks.filter(t => t.id !== taskId);
         localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
-        await this.saveCloudVault();
+
+        if (this.currentUser) {
+            try {
+                const docRef = doc(db, 'users', this.currentUser.uid, 'tasks', taskId);
+                await deleteDoc(docRef);
+            } catch (err) {
+                console.error("Failed to delete task from Firestore:", err);
+            }
+        }
         window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
     },
 
     async saveUserProfile(operatorName, avatar) {
         localStorage.setItem('obsidian_operator_name', operatorName);
         localStorage.setItem('obsidian_avatar', avatar);
-        await this.saveCloudVault();
+
+        if (this.currentUser) {
+            try {
+                const userDocRef = doc(db, 'users', this.currentUser.uid);
+                await updateDoc(userDocRef, { operatorName, avatar, updatedAt: new Date().toISOString() });
+            } catch (err) {
+                console.error("Failed to update user profile in Firestore:", err);
+            }
+        }
         window.dispatchEvent(new CustomEvent('obsidian-data-updated'));
     }
 };
 
-// Initialize Supabase Session listener
-if (supabase) {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session && session.user) {
-            window.ObsidianAuth.currentUser = session.user;
-            window.ObsidianAuth.isCloudSynced = true;
-            window.ObsidianAuth.syncStatus = 'synced';
-            window.ObsidianAuth.syncUserCloudData(session.user.id);
-            window.dispatchEvent(new CustomEvent('obsidian-auth-state-changed', { detail: { user: session.user } }));
-        }
-    });
-
-    supabase.auth.onAuthStateChange((event, session) => {
-        const user = session ? session.user : null;
-        window.ObsidianAuth.currentUser = user;
-        window.ObsidianAuth.isCloudSynced = !!user;
-        window.ObsidianAuth.syncStatus = user ? 'synced' : 'guest';
-        if (user) {
-            window.ObsidianAuth.syncUserCloudData(user.id);
-        }
-        window.dispatchEvent(new CustomEvent('obsidian-auth-state-changed', { detail: { user } }));
-    });
-}
+// Monitor Auth State
+onAuthStateChanged(auth, (user) => {
+    window.ObsidianAuth.currentUser = user;
+    window.ObsidianAuth.isCloudSynced = !!user;
+    window.ObsidianAuth.syncStatus = user ? 'synced' : 'guest';
+    if (user) {
+        window.ObsidianAuth.syncUserCloudData(user.uid);
+    }
+    window.dispatchEvent(new CustomEvent('obsidian-auth-state-changed', { detail: { user } }));
+});

@@ -1,12 +1,10 @@
 {
-  "projectId": "rtyu-ff743",
-  "appId": "1:616153588727:web:2b3c0bede15b05917dc4f2",
-  "apiKey": "AIzaSyBX-SojWyPL2iPohYwQ_nwTYB4wLogIs5E",
-  "authDomain": "rtyu-ff743.firebaseapp.com",
-  "firestoreDatabaseId": "(default)",
-  "storageBucket": "rtyu-ff743.firebasestorage.app",
-  "messagingSenderId": "616153588727",
-  "measurementId": "",
-  "oAuthClientId": "",
-  "recaptchaSiteKey": ""
+  "apiKey": "AIzaSyBcabjR9Bu_uLjG_b2fv8WbpW67ivU4MSA",
+  "authDomain": "course-organizer-ef66e.firebaseapp.com",
+  "projectId": "course-organizer-ef66e",
+  "storageBucket": "course-organizer-ef66e.firebasestorage.app",
+  "messagingSenderId": "920999754560",
+  "appId": "1:920999754560:web:00006682a1f53c215898a5",
+  "measurementId": "G-EEVGPTCRVK",
+  "firestoreDatabaseId": "(default)"
 }
