@@ -1,3 +1,73 @@
+if (!window.ObsidianAuth) {
+    window.ObsidianAuth = {
+        currentUser: null,
+        isCloudSynced: false,
+        syncStatus: 'guest',
+        _waitForRealAuth() {
+            return new Promise((resolve, reject) => {
+                if (window.ObsidianAuth._isReal) return resolve(window.ObsidianAuth);
+                let attempts = 0;
+                const interval = setInterval(() => {
+                    attempts++;
+                    if (window.ObsidianAuth._isReal) {
+                        clearInterval(interval);
+                        resolve(window.ObsidianAuth);
+                    } else if (attempts > 100) { // 10 seconds
+                        clearInterval(interval);
+                        reject(new Error("Authentication module is taking longer than expected to load. Please check your network connection and try again."));
+                    }
+                }, 100);
+            });
+        },
+        async signInWithGoogle(...args) {
+            const real = await this._waitForRealAuth();
+            return real.signInWithGoogle(...args);
+        },
+        async signInWithGoogleRedirect(...args) {
+            const real = await this._waitForRealAuth();
+            return real.signInWithGoogleRedirect(...args);
+        },
+        async loginWithGoogle(...args) {
+            const real = await this._waitForRealAuth();
+            return real.loginWithGoogle(...args);
+        },
+        async loginWithGoogleRedirect(...args) {
+            const real = await this._waitForRealAuth();
+            return real.loginWithGoogleRedirect(...args);
+        },
+        async signInWithEmail(email, password) {
+            const real = await this._waitForRealAuth();
+            return real.signInWithEmail(email, password);
+        },
+        async signUpWithEmail(email, password) {
+            const real = await this._waitForRealAuth();
+            return real.signUpWithEmail(email, password);
+        },
+        async sendMagicLink(email) {
+            const real = await this._waitForRealAuth();
+            return real.sendMagicLink(email);
+        },
+        async signOut() {
+            const real = await this._waitForRealAuth();
+            return real.signOut();
+        },
+        async logout() {
+            const real = await this._waitForRealAuth();
+            return real.logout();
+        },
+        getActiveConfig() { return { projectId: '' }; },
+        saveCustomConfig() {},
+        resetToDefaultConfig() {},
+        async addClass(c) { return 'cls_local'; },
+        async updateClass() {},
+        async deleteClass() {},
+        async addTask(t) { return 'tsk_local'; },
+        async updateTask() {},
+        async deleteTask() {},
+        async saveUserProfile() {}
+    };
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
     // 1. Core Translation Dictionary (English & Arabic)

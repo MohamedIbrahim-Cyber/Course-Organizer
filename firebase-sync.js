@@ -412,6 +412,8 @@ window.ObsidianAuth = {
     }
 };
 
+window.ObsidianAuth._isReal = true;
+
 // Monitor Auth State
 onAuthStateChanged(auth, (user) => {
     window.ObsidianAuth.currentUser = user;
