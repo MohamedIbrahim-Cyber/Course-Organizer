@@ -144,8 +144,22 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_session_timeout: "Session timed out due to inactivity. Terminal locked safely.",
             toast_auth_popup_closed: "Sign-in popup was closed. Please try again or use the Page Redirect option.",
             toast_auth_popup_blocked: "Sign-in popup was blocked by browser. Please allow popups or use Page Redirect.",
-            toast_auth_unauthorized_domain: "Domain not authorized. Add your Vercel domain to Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "Google sign-in is disabled in Firebase Console > Authentication > Sign-in method."
+            toast_auth_unauthorized_domain: "Domain not authorized. Add your Vercel/GitHub domain in Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "Google sign-in is disabled in Firebase Console > Authentication > Sign-in method.",
+            auth_domain_guide_title: "Hosting on Vercel or GitHub Pages?",
+            auth_domain_guide_desc: "Authorize this domain in Firebase Console to enable Google Sign-In:",
+            btn_copy: "Copy Domain",
+            btn_copied: "Copied!",
+            auth_domain_step_1: "1. Go to Firebase Console > Authentication > Settings > Authorized domains",
+            auth_domain_step_2: "2. Click 'Add domain' and paste your domain copied above.",
+            btn_custom_firebase: "Configure Custom Firebase Project (Optional)",
+            label_custom_firebase_json: "Paste your custom firebaseConfig JSON:",
+            btn_reset_default: "Reset Default",
+            btn_save_config: "Save & Reload",
+            toast_config_saved: "Custom Firebase config saved! Reloading...",
+            toast_config_reset: "Reset to default Firebase configuration.",
+            toast_config_invalid: "Invalid JSON. Please provide a valid Firebase config object.",
+            toast_domain_copied: "Domain copied to clipboard!"
         },
         ar: {
             logo: "المهندس أوبسيديان",
@@ -288,8 +302,22 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_session_timeout: "انتهت صلاحية الجلسة لعدم النشاط. تم قفل المحطة بأمان.",
             toast_auth_popup_closed: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى أو استخدام خيار التحويل المباشر.",
             toast_auth_popup_blocked: "تم حظر النافذة المنبثقة من قِبل المتصفح. يرجى السماح بالنوافذ المنبثقة أو استخدام خيار التحويل.",
-            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاق Vercel الخاص بك في Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "تسجيل الدخول عبر Google غير مفعل في لوحة Firebase Console."
+            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاق Vercel أو GitHub في Firebase Console > Authentication > Settings > Authorized domains.",
+            toast_auth_op_not_allowed: "تسجيل الدخول عبر Google غير مفعل في لوحة Firebase Console.",
+            auth_domain_guide_title: "هل تستضيف الموقع على Vercel أو GitHub Pages؟",
+            auth_domain_guide_desc: "قم بتفويض هذا النطاق في لوحة Firebase لتفعيل تسجيل الدخول بواسطة Google:",
+            btn_copy: "نسخ النطاق",
+            btn_copied: "تم النسخ!",
+            auth_domain_step_1: "١. توجه إلى Firebase Console > Authentication > Settings > Authorized domains",
+            auth_domain_step_2: "٢. انقر على 'Add domain' والصق النطاق المنسوخ أعلاه.",
+            btn_custom_firebase: "تخصيص مشروع Firebase مخصص (اختياري)",
+            label_custom_firebase_json: "الصق كود إعدادات firebaseConfig JSON الخاص بمشروعك:",
+            btn_reset_default: "استعادة الافتراضي",
+            btn_save_config: "حفظ وإعادة التحميل",
+            toast_config_saved: "تم حفظ الإعدادات المخصصة بنجاح! جاري التحديث...",
+            toast_config_reset: "تمت استعادة إعدادات Firebase الافتراضية.",
+            toast_config_invalid: "صيغة JSON غير صحيحة. يرجى التحقق من كائن الإعدادات.",
+            toast_domain_copied: "تم نسخ النطاق إلى الحافظة بنجاح!"
         }
     };
 
@@ -1971,6 +1999,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const msg = ((err && err.code) || (err && err.message) || '').toLowerCase();
         
         if (msg.includes('unauthorized-domain')) {
+            const domainNotice = document.getElementById('auth-domain-notice');
+            if (domainNotice) domainNotice.classList.remove('hidden');
             return t.toast_auth_unauthorized_domain;
         }
         if (msg.includes('operation-not-allowed')) {
@@ -1984,6 +2014,88 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         return (err && err.message) || t.toast_auth_error;
     }
+
+    // Initialize Domain Helper & Custom Firebase Config in Auth Modal
+    function initDomainAuthorizationHelper() {
+        const hostnameDisplay = document.getElementById('current-hostname-display');
+        const copyHostBtn = document.getElementById('btn-copy-hostname');
+        const domainNotice = document.getElementById('auth-domain-notice');
+        const toggleConfigBtn = document.getElementById('btn-toggle-custom-config');
+        const customConfigContainer = document.getElementById('auth-custom-config-container');
+        const customConfigTextarea = document.getElementById('custom-firebase-json');
+        const saveConfigBtn = document.getElementById('btn-save-firebase-config');
+        const resetConfigBtn = document.getElementById('btn-reset-firebase-config');
+
+        const currentHost = window.location.hostname || 'localhost';
+        if (hostnameDisplay) {
+            hostnameDisplay.textContent = currentHost;
+        }
+
+        // Show domain helper if deployed on Vercel, GitHub Pages, or external custom domain
+        if (domainNotice) {
+            const isExternalHost = currentHost.includes('vercel.app') || 
+                                   currentHost.includes('github.io') || 
+                                   (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('.run.app'));
+            if (isExternalHost) {
+                domainNotice.classList.remove('hidden');
+            }
+        }
+
+        if (copyHostBtn) {
+            copyHostBtn.addEventListener('click', async () => {
+                const t = translations[currentLang];
+                try {
+                    await navigator.clipboard.writeText(currentHost);
+                    copyHostBtn.textContent = t.btn_copied || "Copied!";
+                    showToast(t.toast_domain_copied || "Domain copied to clipboard!");
+                    setTimeout(() => {
+                        copyHostBtn.textContent = t.btn_copy || "Copy";
+                    }, 2000);
+                } catch (clipErr) {
+                    showToast(currentHost);
+                }
+            });
+        }
+
+        if (toggleConfigBtn && customConfigContainer) {
+            toggleConfigBtn.addEventListener('click', () => {
+                const isHidden = customConfigContainer.style.display === 'none';
+                customConfigContainer.style.display = isHidden ? 'block' : 'none';
+                if (isHidden && customConfigTextarea && window.ObsidianAuth) {
+                    const activeCfg = window.ObsidianAuth.getActiveConfig();
+                    customConfigTextarea.value = JSON.stringify(activeCfg, null, 2);
+                }
+            });
+        }
+
+        if (saveConfigBtn && customConfigTextarea) {
+            saveConfigBtn.addEventListener('click', () => {
+                const t = translations[currentLang];
+                const raw = customConfigTextarea.value.trim();
+                try {
+                    const parsed = JSON.parse(raw);
+                    if (window.ObsidianAuth) {
+                        window.ObsidianAuth.saveCustomConfig(parsed);
+                        showToast(t.toast_config_saved || "Configuration saved! Reloading...");
+                    }
+                } catch (e) {
+                    showToast(t.toast_config_invalid || "Invalid JSON configuration format.", true);
+                }
+            });
+        }
+
+        if (resetConfigBtn) {
+            resetConfigBtn.addEventListener('click', () => {
+                const t = translations[currentLang];
+                if (window.ObsidianAuth) {
+                    window.ObsidianAuth.resetToDefaultConfig();
+                    showToast(t.toast_config_reset || "Configuration reset to default.");
+                }
+            });
+        }
+    }
+
+    initDomainAuthorizationHelper();
 
     // Google Sign In (Popup)
     if (btnGoogleAuth) {

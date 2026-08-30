@@ -24,7 +24,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js';
 
 // Configuration loaded from firebase-applet-config.json
-const firebaseConfig = {
+const defaultFirebaseConfig = {
     projectId: "striped-justice-4nm9t",
     appId: "1:1069814168930:web:409021f1a1c3ba7d06403b",
     apiKey: "AIzaSyD1kWGjClo5YhG0dnKwGChMB_RElo9uxME",
@@ -34,10 +34,25 @@ const firebaseConfig = {
     messagingSenderId: "1069814168930"
 };
 
+let activeConfig = defaultFirebaseConfig;
+try {
+    const customConfigRaw = localStorage.getItem('obsidian_custom_firebase_config');
+    if (customConfigRaw) {
+        const parsed = JSON.parse(customConfigRaw);
+        if (parsed && parsed.apiKey && parsed.projectId) {
+            activeConfig = { ...defaultFirebaseConfig, ...parsed };
+        }
+    }
+} catch (e) {
+    console.warn("Custom Firebase config parse notice:", e);
+}
+
 // Initialize Firebase App & Services
-const app = initializeApp(firebaseConfig);
+const app = initializeApp(activeConfig);
 const auth = getAuth(app);
-const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+const db = activeConfig.firestoreDatabaseId && activeConfig.firestoreDatabaseId !== "(default)" 
+    ? getFirestore(app, activeConfig.firestoreDatabaseId)
+    : getFirestore(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
     prompt: 'select_account'
@@ -206,6 +221,36 @@ window.ObsidianAuth = {
 
     async signOut() {
         await signOut(auth);
+    },
+
+    getCurrentHostname() {
+        return window.location.hostname || 'localhost';
+    },
+
+    getActiveConfig() {
+        return { ...activeConfig };
+    },
+
+    saveCustomConfig(configObj) {
+        try {
+            if (typeof configObj === 'string') {
+                configObj = JSON.parse(configObj);
+            }
+            if (!configObj.apiKey || !configObj.projectId) {
+                throw new Error("Config must contain at least apiKey and projectId.");
+            }
+            localStorage.setItem('obsidian_custom_firebase_config', JSON.stringify(configObj));
+            window.location.reload();
+            return true;
+        } catch (e) {
+            console.error("Failed to save custom Firebase config:", e);
+            throw e;
+        }
+    },
+
+    resetToDefaultConfig() {
+        localStorage.removeItem('obsidian_custom_firebase_config');
+        window.location.reload();
     },
 
     // Comprehensive Cloud Data Sync & Migration (Local/Guest -> Cloud Firestore & Cloud -> Local)
