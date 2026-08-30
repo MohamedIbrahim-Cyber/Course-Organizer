@@ -9,6 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;600;700;800&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
     <script>
         (function() {
             var theme = localStorage.getItem('obsidian_theme') || 'dark';
@@ -55,13 +56,7 @@
                     </div>
                 </div>
 
-                <!-- Account / Cloud Sync Pill Button -->
-                <button id="auth-modal-btn" class="auth-btn-pill">
-                    <span class="sync-dot offline" id="nav-sync-indicator"></span>
-                    <span id="nav-auth-label" data-i18n="btn_signin_cloud">Sign In / Sync</span>
-                </button>
-
-                <div class="profile-pic" id="profile-pic-btn" title="Edit Operator Profile" style="display: none;">
+                <div class="profile-pic" id="profile-pic-btn" title="Edit Operator Profile">
                     <img id="nav-avatar-img" src="photos/avatar.png" alt="Profile Picture">
                 </div>
             </div>
@@ -119,6 +114,9 @@
                     <h2 data-i18n="form_message">Inquiry Message:</h2>
                     <textarea id="contact-message" class="contact-textarea" placeholder="Provide detailed context regarding your transmission..." required></textarea>
                     
+                    <!-- Cloudflare Turnstile Bot Defense Widget -->
+                    <div class="cf-turnstile" data-sitekey="1x00000000000000000000AA" data-theme="dark" style="margin: 0.75rem 0;"></div>
+
                     <div id="contact-error-message" class="error-message"></div>
                     <button type="submit" id="contact-submit-btn" class="submit-btn" data-i18n="btn_transmit">Transmit Message</button>
                 </form>
@@ -181,111 +179,6 @@
             </div>
         </div>
 
-        <!-- Authentication & Cloud Sync Modal -->
-        <div class="modal-overlay" id="auth-modal">
-            <div class="modal-card">
-                <div class="modal-header">
-                    <h3 id="auth-modal-title" data-i18n="auth_modal_title">Cloud Synchronization & Account</h3>
-                    <button class="modal-close-btn" id="auth-modal-close">×</button>
-                </div>
-
-                <!-- Logged In View -->
-                <div id="auth-logged-in-view" style="display: none;">
-                    <div class="user-account-badge">
-                        <img id="auth-user-avatar" src="photos/avatar.png" alt="Avatar" style="width: 42px; height: 42px; border-radius: 50%; object-fit: cover;">
-                        <div class="user-account-info">
-                            <span class="user-account-name" id="auth-user-display-name">Architect</span>
-                            <span class="user-account-email" id="auth-user-email">operator@terminal.io</span>
-                        </div>
-                        <div style="margin-inline-start: auto;">
-                            <span class="auth-status-chip"><span class="sync-dot"></span> <span data-i18n="status_synced">Synced</span></span>
-                        </div>
-                    </div>
-                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;" data-i18n="auth_sync_desc">Your classes and task objectives are synchronized in real-time across all your devices.</p>
-                    <button type="button" class="btn-signout" id="btn-auth-signout" data-i18n="btn_signout">Sign Out of Terminal</button>
-                </div>
-
-                <!-- Logged Out (Google Auth) View -->
-                <div id="auth-forms-view">
-                    <div class="auth-feature-box">
-                        <div class="auth-cloud-badge">
-                            <span class="sync-dot"></span>
-                            <span data-i18n="auth_sync_feature_title">Cloud Synchronization</span>
-                        </div>
-                        <p class="auth-feature-text" data-i18n="auth_modal_desc">Sign in with your Google account to sync all your classes, task objectives, schedules, and custom preferences securely in real time across all devices.</p>
-                    </div>
-
-                    <!-- One-Click Google Login -->
-                    <button type="button" class="btn-google-primary" id="btn-google-auth">
-                        <svg width="20" height="20" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                        </svg>
-                        <span data-i18n="btn_google_signin">Continue with Google</span>
-                    </button>
-
-                    <!-- Redirect Fallback Option for Popup Blocker / Mobile -->
-                    <div style="text-align: center; margin-top: 0.85rem;">
-                        <button type="button" class="btn-auth-redirect" id="btn-google-redirect" data-i18n="btn_google_redirect">Having trouble with popup? Sign in with Page Redirect</button>
-                    </div>
-
-                    <!-- Email / Password Authentication Form -->
-                    <div style="margin-top: 1.25rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
-                        <p style="font-size: 0.82rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--text-main);">Or sign in with Email & Password:</p>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.75rem;">
-                            <input type="email" id="auth-email-input" placeholder="operator@terminal.io" style="padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 0.9rem;" />
-                            <input type="password" id="auth-password-input" placeholder="••••••••" style="padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-main); font-size: 0.9rem;" />
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button type="button" id="btn-email-signin" style="flex: 1; padding: 0.5rem; border-radius: 8px; background: var(--primary); color: #fff; font-weight: 600; border: none; cursor: pointer; font-size: 0.85rem;">Sign In</button>
-                            <button type="button" id="btn-email-signup" style="flex: 1; padding: 0.5rem; border-radius: 8px; background: var(--bg-secondary); color: var(--text-main); font-weight: 600; border: 1px solid var(--border-color); cursor: pointer; font-size: 0.85rem;">Create Account</button>
-                        </div>
-                        <div style="text-align: center; margin-top: 0.5rem;">
-                            <button type="button" id="btn-magic-link" style="background: none; border: none; color: var(--primary); font-size: 0.78rem; text-decoration: underline; cursor: pointer;">Send Magic Link (Passwordless)</button>
-                        </div>
-                    </div>
-
-                    <!-- Vercel / GitHub Pages Domain Authorization Guide -->
-                    <div id="auth-domain-notice" class="auth-domain-notice hidden">
-                        <div class="auth-domain-header">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                            </svg>
-                            <span data-i18n="auth_domain_guide_title">Hosting on Vercel / GitHub Pages?</span>
-                        </div>
-                        <p style="margin: 0 0 0.3rem 0; font-size: 0.78rem;" data-i18n="auth_domain_guide_desc">Authorize this domain in Firebase to enable Google Sign-In:</p>
-                        <div class="auth-domain-pill">
-                            <span id="current-hostname-display">localhost</span>
-                            <button type="button" class="btn-copy-domain" id="btn-copy-hostname" data-i18n="btn_copy">Copy</button>
-                        </div>
-                        <ol class="auth-domain-steps">
-                            <li data-i18n="auth_domain_step_1">Go to Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains</li>
-                            <li data-i18n="auth_domain_step_2">Click Add domain and paste the hostname copied above.</li>
-                        </ol>
-                        <div style="text-align: center; margin-top: 0.5rem;">
-                            <button type="button" class="auth-config-toggle-btn" id="btn-toggle-custom-config" data-i18n="btn_custom_firebase">Configure Custom Firebase Project (Optional)</button>
-                        </div>
-                        <div id="auth-custom-config-container" class="auth-custom-config-box" style="display: none;">
-                            <label style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem;" data-i18n="label_custom_firebase_json">Paste your firebaseConfig JSON:</label>
-                            <textarea id="custom-firebase-json" placeholder='{ "apiKey": "...", "authDomain": "...", "projectId": "..." }'></textarea>
-                            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
-                                <button type="button" class="btn-secondary" id="btn-reset-firebase-config" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" data-i18n="btn_reset_default">Reset</button>
-                                <button type="button" class="submit-btn" id="btn-save-firebase-config" style="width: auto; padding: 0.25rem 0.75rem; font-size: 0.75rem;" data-i18n="btn_save_config">Apply</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="modal-actions" style="margin-top: 1.25rem;">
-                        <button type="button" class="btn-secondary" id="auth-cancel-btn" style="width: 100%;" data-i18n="btn_cancel">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
         <!-- Notification container -->
         <div id="toast-notification" class="toast-notification"></div>
 
@@ -325,7 +218,6 @@
                 </div>
             </div>
         </footer>
-        <script type="module" src="firebase-sync.js"></script>
-        <script src="website.js"></script>
+        <script src="website.js?v=2.2.0"></script>
     </body>
 </html>

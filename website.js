@@ -1,83 +1,152 @@
-if (!window.ObsidianAuth) {
-    window.ObsidianAuth = {
-        currentUser: null,
-        isCloudSynced: false,
-        syncStatus: 'guest',
-        _waitForRealAuth() {
-            return new Promise((resolve, reject) => {
-                if (window.ObsidianAuth._isReal) return resolve(window.ObsidianAuth);
-                let attempts = 0;
-                let shownNotice = false;
-                const interval = setInterval(() => {
-                    attempts++;
-                    if (window.ObsidianAuth._isReal) {
-                        clearInterval(interval);
-                        resolve(window.ObsidianAuth);
-                    } else {
-                        if (attempts > 15 && !shownNotice && typeof showToast === 'function') {
-                            shownNotice = true;
-                            showToast("Connecting to Firebase authentication services...");
-                        }
-                        if (attempts > 600) { // 60 seconds
-                            clearInterval(interval);
-                            reject(new Error("Authentication module connection timed out. Please refresh the page."));
-                        }
-                    }
-                }, 100);
-            });
-        },
-        async signInWithGoogle(...args) {
-            const real = await this._waitForRealAuth();
-            return real.signInWithGoogle(...args);
-        },
-        async signInWithGoogleRedirect(...args) {
-            const real = await this._waitForRealAuth();
-            return real.signInWithGoogleRedirect(...args);
-        },
-        async loginWithGoogle(...args) {
-            const real = await this._waitForRealAuth();
-            return real.loginWithGoogle(...args);
-        },
-        async loginWithGoogleRedirect(...args) {
-            const real = await this._waitForRealAuth();
-            return real.loginWithGoogleRedirect(...args);
-        },
-        async signInWithEmail(email, password) {
-            const real = await this._waitForRealAuth();
-            return real.signInWithEmail(email, password);
-        },
-        async signUpWithEmail(email, password) {
-            const real = await this._waitForRealAuth();
-            return real.signUpWithEmail(email, password);
-        },
-        async sendMagicLink(email) {
-            const real = await this._waitForRealAuth();
-            return real.sendMagicLink(email);
-        },
-        async signOut() {
-            const real = await this._waitForRealAuth();
-            return real.signOut();
-        },
-        async logout() {
-            const real = await this._waitForRealAuth();
-            return real.logout();
-        },
-        getActiveConfig() { return { projectId: '' }; },
-        saveCustomConfig() {},
-        resetToDefaultConfig() {},
-        async addClass(c) { return 'cls_local'; },
-        async updateClass() {},
-        async deleteClass() {},
-        async addTask(t) { return 'tsk_local'; },
-        async updateTask() {},
-        async deleteTask() {},
-        async saveUserProfile() {}
-    };
-}
-
 document.addEventListener('DOMContentLoaded', () => {
     // --------------------------------------------------------------------------
-    // 1. Core Translation Dictionary (English & Arabic)
+    // 1. Defensive Security Utilities (XSS Prevention & Prototype Hardening)
+    // --------------------------------------------------------------------------
+    
+    // Robust HTML Sanitizer to prevent DOM-based XSS
+    function escapeHTML(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/`/g, '&#x60;');
+    }
+
+    // Prototype-Pollution Resistant JSON Parser
+    function safeJSONParse(rawStr, fallback = null) {
+        if (!rawStr || typeof rawStr !== 'string') return fallback;
+        try {
+            const parsed = JSON.parse(rawStr, (key, value) => {
+                if (key === '__proto__' || key === 'constructor' || key === 'prototype') {
+                    return undefined; // Drop hazardous prototype-pollution properties
+                }
+                return value;
+            });
+            return parsed !== null && parsed !== undefined ? parsed : fallback;
+        } catch {
+            return fallback;
+        }
+    }
+
+    // Avatar URL Sanitizer against malicious schemes (javascript:, data:text/html, etc.)
+    function sanitizeAvatarUrl(url) {
+        if (!url || typeof url !== 'string') return 'photos/avatar.png';
+        const trimmed = url.trim();
+        
+        // Allowed local presets
+        const allowedPresets = [
+            'photos/avatar.png',
+            'photos/websitelogo.png',
+            'photos/security.png',
+            'photos/serverlink.png'
+        ];
+        if (allowedPresets.includes(trimmed)) {
+            return trimmed;
+        }
+
+        // Allowed safe Base64 image formats
+        if (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/.test(trimmed)) {
+            return trimmed;
+        }
+
+        // Allowed HTTPS URLs (e.g. imgur, trusted cdns)
+        if (/^https:\/\/[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}\/[^\s"']+$/.test(trimmed)) {
+            return trimmed;
+        }
+
+        return 'photos/avatar.png';
+    }
+
+    // Strict Schema Validator for Backup Restores
+    function validateBackupSchema(data) {
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+            return { valid: false, error: 'Backup payload must be a JSON object.' };
+        }
+
+        // Reject prototype pollution attempts
+        if (Object.prototype.hasOwnProperty.call(data, '__proto__') ||
+            Object.prototype.hasOwnProperty.call(data, 'constructor') ||
+            Object.prototype.hasOwnProperty.call(data, 'prototype')) {
+            return { valid: false, error: 'Malicious prototype properties detected.' };
+        }
+
+        const sanitized = {
+            classes: [],
+            tasks: [],
+            operatorName: 'Architect'
+        };
+
+        // 1. Classes array validation (Max 50 courses, max 250 chars per field)
+        const rawClasses = data.classes || data.obsidianClasses;
+        if (rawClasses !== undefined) {
+            if (!Array.isArray(rawClasses) || rawClasses.length > 50) {
+                return { valid: false, error: 'Classes list must be an array with maximum 50 courses.' };
+            }
+
+            for (const item of rawClasses) {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                    return { valid: false, error: 'Each class record must be a valid object.' };
+                }
+                if (typeof item.title !== 'string' || item.title.trim().length === 0 || item.title.length > 250) {
+                    return { valid: false, error: 'Class title is required and must be under 250 characters.' };
+                }
+                const code = item.code ? String(item.code).slice(0, 100) : '';
+                const instructor = item.instructor ? String(item.instructor).slice(0, 250) : '';
+                const date = item.date ? String(item.date).slice(0, 250) : 'Mon, 09:00 - 10:30';
+
+                sanitized.classes.push({
+                    title: String(item.title).trim().slice(0, 250),
+                    code,
+                    instructor,
+                    date
+                });
+            }
+        }
+
+        // 2. Tasks array validation (Max 200 tasks, max 250/1000 chars per field)
+        const rawTasks = data.tasks || data.obsidianTasks;
+        if (rawTasks !== undefined) {
+            if (!Array.isArray(rawTasks) || rawTasks.length > 200) {
+                return { valid: false, error: 'Tasks list must be an array with maximum 200 entries.' };
+            }
+
+            for (const item of rawTasks) {
+                if (!item || typeof item !== 'object' || Array.isArray(item)) {
+                    return { valid: false, error: 'Each task record must be a valid object.' };
+                }
+                if (typeof item.title !== 'string' || item.title.trim().length === 0 || item.title.length > 250) {
+                    return { valid: false, error: 'Task title is required and must be under 250 characters.' };
+                }
+                const description = item.description ? String(item.description).slice(0, 1000) : '';
+                const date = item.date ? String(item.date).slice(0, 250) : 'Mon, 23:59';
+                const completed = Boolean(item.completed);
+
+                sanitized.tasks.push({
+                    title: String(item.title).trim().slice(0, 250),
+                    description,
+                    date,
+                    completed
+                });
+            }
+        }
+
+        // 3. Operator Name validation (Max 60 chars)
+        const rawName = data.operatorName || data.obsidian_operator_name;
+        if (rawName !== undefined && rawName !== null) {
+            if (typeof rawName !== 'string' || rawName.length > 60) {
+                return { valid: false, error: 'Operator name must be a string under 60 characters.' };
+            }
+            sanitized.operatorName = rawName.trim().slice(0, 60);
+        }
+
+        return { valid: true, sanitized };
+    }
+
+    // --------------------------------------------------------------------------
+    // 2. Core Translation Dictionary (English & Arabic)
     // --------------------------------------------------------------------------
     const translations = {
         en: {
@@ -162,12 +231,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_time_req: "Please specify start and end times.",
             toast_task_title_req: "Task title is required.",
             toast_task_time_req: "Task due time is required.",
-            toast_contact_req: "All fields are required.",
+            toast_contact_req: "All fields and bot verification are required.",
             toast_discord_ok: "Transmission beamed to Discord channel!",
             toast_discord_err: "Discord transmission error.",
             toast_discord_net_err: "Transmission relayed locally.",
             
-            // New feature translations
+            // Feature translations
             search_placeholder: "Search courses, codes, instructors, or task objectives...",
             filter_by_day: "Schedule:",
             filter_by_task: "Tasks:",
@@ -199,44 +268,11 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_profile_saved: "Operator profile updated.",
             toast_export_ok: "System backup downloaded successfully.",
             toast_import_ok: "Backup restored successfully!",
-            toast_import_err: "Invalid backup JSON file format.",
+            toast_import_err: "Invalid or corrupted backup JSON file format.",
             live_status_in_session: "● IN SESSION:",
             live_status_upcoming: "⏱ NEXT NODE:",
             live_status_concluded: "✓ ALL NODES CONCLUDED FOR TODAY",
-            live_status_none: "○ NO LECTURES SCHEDULED TODAY",
-            btn_signin_cloud: "Sign In / Sync",
-            btn_account: "Account",
-            auth_modal_title: "Cloud Synchronization & Account",
-            auth_sync_feature_title: "Cloud Synchronization",
-            auth_modal_desc: "Sign in with your Google account to sync all your classes, task objectives, schedules, and custom preferences securely in real time across all devices.",
-            btn_google_signin: "Continue with Google",
-            btn_google_redirect: "Having trouble with popup? Sign in with Page Redirect",
-            btn_signout: "Sign Out of Terminal",
-            status_synced: "Synced",
-            status_guest: "Guest (Offline)",
-            auth_sync_desc: "Your classes and task objectives are synchronized in real-time across all your devices.",
-            toast_auth_signin_ok: "Terminal authenticated. Cloud synchronization active.",
-            toast_auth_signout_ok: "Signed out of terminal.",
-            toast_auth_error: "Authentication error. Please try again.",
-            toast_session_timeout: "Session timed out due to inactivity. Terminal locked safely.",
-            toast_auth_popup_closed: "Sign-in popup was closed. Please try again or use the Page Redirect option.",
-            toast_auth_popup_blocked: "Sign-in popup was blocked by browser. Please allow popups or use Page Redirect.",
-            toast_auth_unauthorized_domain: "Domain not authorized. Add your Vercel/GitHub domain in Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "Google sign-in is disabled in Firebase Console > Authentication > Sign-in method.",
-            auth_domain_guide_title: "Hosting on Vercel or GitHub Pages?",
-            auth_domain_guide_desc: "Authorize this domain in Firebase Console to enable Google Sign-In:",
-            btn_copy: "Copy Domain",
-            btn_copied: "Copied!",
-            auth_domain_step_1: "1. Go to Firebase Console > Authentication > Settings > Authorized domains",
-            auth_domain_step_2: "2. Click 'Add domain' and paste your domain copied above.",
-            btn_custom_firebase: "Configure Custom Firebase Project (Optional)",
-            label_custom_firebase_json: "Paste your custom firebaseConfig JSON:",
-            btn_reset_default: "Reset Default",
-            btn_save_config: "Save & Reload",
-            toast_config_saved: "Custom Firebase config saved! Reloading...",
-            toast_config_reset: "Reset to default Firebase configuration.",
-            toast_config_invalid: "Invalid JSON. Please provide a valid Firebase config object.",
-            toast_domain_copied: "Domain copied to clipboard!"
+            live_status_none: "○ NO LECTURES SCHEDULED TODAY"
         },
         ar: {
             logo: "المهندس أوبسيديان",
@@ -320,12 +356,12 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_time_req: "يرجى تحديد وقت البدء والانتهاء.",
             toast_task_title_req: "عنوان المهمة مطلوب.",
             toast_task_time_req: "وقت التسليم مطلوب.",
-            toast_contact_req: "جميع الحقول مطلوبة لإتمام الإرسال.",
+            toast_contact_req: "جميع الحقول والتحقق الأمني مطلوبة لإتمام الإرسال.",
             toast_discord_ok: "تم إرسال الرسالة بنجاح عبر Discord!",
             toast_discord_err: "حدث خطأ أثناء الإرسال.",
             toast_discord_net_err: "تم تسجيل الرسالة محليًا بنجاح.",
             
-            // New feature translations (Arabic)
+            // Feature translations (Arabic)
             search_placeholder: "ابحث في المواد، الأكواد، المحاضرين، أو أهداف المهام...",
             filter_by_day: "الجدول:",
             filter_by_task: "المهام:",
@@ -357,131 +393,93 @@ document.addEventListener('DOMContentLoaded', () => {
             toast_profile_saved: "تم حفظ الملف التعريفي بنجاح.",
             toast_export_ok: "تم تحميل النسخة الاحتياطية بنجاح.",
             toast_import_ok: "تم استيراد واستعادة البيانات بنجاح!",
-            toast_import_err: "ملف النسخة الاحتياطية غير صالح.",
+            toast_import_err: "ملف النسخة الاحتياطية تالف أو غير صالح.",
             live_status_in_session: "● قيد الانعقاد:",
             live_status_upcoming: "⏱ المحاضرة القادمة:",
             live_status_concluded: "✓ انتهت جميع محاضرات اليوم",
-            live_status_none: "○ لا توجد محاضرات مجدولة لليوم",
-            btn_signin_cloud: "تسجيل الدخول / المزامنة",
-            btn_account: "حسابي",
-            auth_modal_title: "المزامنة السحابية والحساب",
-            auth_sync_feature_title: "المزامنة السحابية الفورية",
-            auth_modal_desc: "سجل الدخول باستخدام حساب Google لحفظ ومزامنة كافة محاضراتك ومهامك وجداولك وإعداداتك بشكل آمن عبر جميع أجهزتك.",
-            btn_google_signin: "المتابعة باستخدام Google",
-            btn_google_redirect: "مشكلة في النافذة المنبثقة؟ تسجيل الدخول عبر التحويل المباشر",
-            btn_signout: "تسجيل الخروج من المحطة",
-            status_synced: "متصل وسحابي",
-            status_guest: "وضع الضيف (محلي)",
-            auth_sync_desc: "يتم حفظ ومزامنة محاضراتك ومهامك في الوقت الفعلي عبر جميع أجهزتك.",
-            toast_auth_signin_ok: "تم تسجيل الدخول بنجاح. المزامنة السحابية نشطة الآن.",
-            toast_auth_signout_ok: "تم تسجيل الخروج بنجاح.",
-            toast_auth_error: "حدث خطأ أثناء تسجيل الدخول. يرجى المحاولة مجددًا.",
-            toast_session_timeout: "انتهت صلاحية الجلسة لعدم النشاط. تم قفل المحطة بأمان.",
-            toast_auth_popup_closed: "تم إغلاق نافذة تسجيل الدخول. يرجى المحاولة مرة أخرى أو استخدام خيار التحويل المباشر.",
-            toast_auth_popup_blocked: "تم حظر النافذة المنبثقة من قِبل المتصفح. يرجى السماح بالنوافذ المنبثقة أو استخدام خيار التحويل.",
-            toast_auth_unauthorized_domain: "النطاق غير مصرح به. أضف نطاق Vercel أو GitHub في Firebase Console > Authentication > Settings > Authorized domains.",
-            toast_auth_op_not_allowed: "تسجيل الدخول عبر Google غير مفعل في لوحة Firebase Console.",
-            auth_domain_guide_title: "هل تستضيف الموقع على Vercel أو GitHub Pages؟",
-            auth_domain_guide_desc: "قم بتفويض هذا النطاق في لوحة Firebase لتفعيل تسجيل الدخول بواسطة Google:",
-            btn_copy: "نسخ النطاق",
-            btn_copied: "تم النسخ!",
-            auth_domain_step_1: "١. توجه إلى Firebase Console > Authentication > Settings > Authorized domains",
-            auth_domain_step_2: "٢. انقر على 'Add domain' والصق النطاق المنسوخ أعلاه.",
-            btn_custom_firebase: "تخصيص مشروع Firebase مخصص (اختياري)",
-            label_custom_firebase_json: "الصق كود إعدادات firebaseConfig JSON الخاص بمشروعك:",
-            btn_reset_default: "استعادة الافتراضي",
-            btn_save_config: "حفظ وإعادة التحميل",
-            toast_config_saved: "تم حفظ الإعدادات المخصصة بنجاح! جاري التحديث...",
-            toast_config_reset: "تمت استعادة إعدادات Firebase الافتراضية.",
-            toast_config_invalid: "صيغة JSON غير صحيحة. يرجى التحقق من كائن الإعدادات.",
-            toast_domain_copied: "تم نسخ النطاق إلى الحافظة بنجاح!"
+            live_status_none: "○ لا توجد محاضرات مجدولة لليوم"
         }
     };
 
+    // --------------------------------------------------------------------------
+    // 3. System Defaults & Local Storage Initialization
+    // --------------------------------------------------------------------------
+    const legacyDefaultClassTitles = [
+        "Network Security & Cryptography",
+        "Autonomous Robotics Engineering",
+        "Database Systems & Architecture",
+        "Quantum Algorithms & Computation",
+        "Advanced Operating Systems",
+        "Distributed Systems & Cloud",
+        "Cyber Security Protocols"
+    ].map(s => s.toLowerCase().trim());
+
+    const legacyDefaultTaskTitles = [
+        "Kernel Synchronization Lab",
+        "Microservices Architecture Essay",
+        "Network Packet Analysis WireGuard",
+        "RSA Encryption Lab Report",
+        "Robotics Inverse Kinematics",
+        "Database B-Tree Index Optimization"
+    ].map(s => s.toLowerCase().trim());
+
     const daysEn = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const daysAr = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-    const monthsEn = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
-    const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
     const dayAbbreviations = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthsEn = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
 
-    // --------------------------------------------------------------------------
-    // 2. Initial Sample Dataset Bootstrapping (if empty or blank)
-    // --------------------------------------------------------------------------
+    function generateUniqueId(prefix) {
+        return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+    }
+
     function initializeDefaultData() {
-        const defaultClasses = [];
-
-        const defaultTasks = [
-            {
-                title: "Kernel Synchronization Lab",
-                description: "Implement semaphore lock barriers and solve race conditions in C/Rust.",
-                date: "Wed, 23:59",
-                completed: false
-            },
-            {
-                title: "Microservices Architecture Essay",
-                description: "Submit 5-page case study analyzing event-driven distributed consensus.",
-                date: "Fri, 18:00",
-                completed: false
-            },
-            {
-                title: "Network Packet Analysis WireGuard",
-                description: "Inspect PCAP stream captures and verify cryptographic handshakes.",
-                date: "Sat, 20:00",
-                completed: true
-            }
-        ];
-
-        let localClasses = [];
-        try {
-            const raw = localStorage.getItem('obsidianClasses');
-            localClasses = raw ? JSON.parse(raw) : [];
-        } catch { localClasses = []; }
-
-        // Filter out old default courses if present
-        const oldDefaultTitles = ["Advanced Operating Systems", "Distributed Systems & Cloud", "Cyber Security Protocols"];
-        localClasses = localClasses.filter(c => !oldDefaultTitles.includes(c.title));
-
-        if (!Array.isArray(localClasses) || localClasses.length === 0) {
-            let backupClasses = [];
-            try {
-                const bRaw = localStorage.getItem('obsidian_backup_classes');
-                if (bRaw) {
-                    backupClasses = JSON.parse(bRaw);
-                    if (Array.isArray(backupClasses)) {
-                        backupClasses = backupClasses.filter(c => !oldDefaultTitles.includes(c.title));
-                    }
-                }
-            } catch { backupClasses = []; }
-
-            const toStore = (Array.isArray(backupClasses) && backupClasses.length > 0) ? backupClasses : defaultClasses;
-            localStorage.setItem('obsidianClasses', JSON.stringify(toStore));
-            localStorage.setItem('obsidian_backup_classes', JSON.stringify(toStore));
+        // Retrieve existing classes without re-seeding built-ins on refresh
+        let localClasses = safeJSONParse(localStorage.getItem('obsidianClasses'), null);
+        if (localClasses === null) {
+            localStorage.setItem('obsidianClasses', JSON.stringify([]));
+        } else if (Array.isArray(localClasses)) {
+            // Strip out old sample/mock default titles if still lingering
+            const cleaned = localClasses.filter(c => {
+                if (!c || !c.title) return false;
+                const titleNorm = String(c.title).toLowerCase().trim();
+                return !legacyDefaultClassTitles.includes(titleNorm);
+            }).map((c, i) => {
+                if (!c.id) c.id = generateUniqueId('cls') + '_' + i;
+                return c;
+            });
+            localStorage.setItem('obsidianClasses', JSON.stringify(cleaned));
         } else {
-            localStorage.setItem('obsidianClasses', JSON.stringify(localClasses));
+            localStorage.setItem('obsidianClasses', JSON.stringify([]));
         }
 
-        let localTasks = [];
-        try {
-            const raw = localStorage.getItem('obsidianTasks');
-            localTasks = raw ? JSON.parse(raw) : [];
-        } catch { localTasks = []; }
-
-        if (!Array.isArray(localTasks) || localTasks.length === 0) {
-            let backupTasks = [];
-            try {
-                const bRaw = localStorage.getItem('obsidian_backup_tasks');
-                backupTasks = bRaw ? JSON.parse(bRaw) : [];
-            } catch { backupTasks = []; }
-
-            const toStore = (Array.isArray(backupTasks) && backupTasks.length > 0) ? backupTasks : defaultTasks;
-            localStorage.setItem('obsidianTasks', JSON.stringify(toStore));
-            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(toStore));
+        // Retrieve existing tasks without re-seeding built-ins on refresh
+        let localTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), null);
+        if (localTasks === null) {
+            localStorage.setItem('obsidianTasks', JSON.stringify([]));
+        } else if (Array.isArray(localTasks)) {
+            // Strip out old sample/mock default titles if still lingering
+            const cleanedTasks = localTasks.filter(t => {
+                if (!t || !t.title) return false;
+                const titleNorm = String(t.title).toLowerCase().trim();
+                return !legacyDefaultTaskTitles.includes(titleNorm);
+            }).map((t, i) => {
+                if (!t.id) t.id = generateUniqueId('tsk') + '_' + i;
+                return t;
+            });
+            localStorage.setItem('obsidianTasks', JSON.stringify(cleanedTasks));
+        } else {
+            localStorage.setItem('obsidianTasks', JSON.stringify([]));
         }
+
+        // Remove obsolete legacy backup keys so deleted data is never resurrected
+        localStorage.removeItem('obsidian_backup_classes');
+        localStorage.removeItem('obsidian_backup_tasks');
     }
     initializeDefaultData();
 
     // --------------------------------------------------------------------------
-    // 3. FAQ Database
+    // 4. FAQ Database
     // --------------------------------------------------------------------------
     const faqDatabase = {
         en: {
@@ -533,13 +531,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 4. Language & Theme Engines
+    // 5. Language & Theme Engines
     // --------------------------------------------------------------------------
     let currentLang = localStorage.getItem('obsidian_lang') || 'en';
     const langBtn = document.getElementById('lang-btn');
 
     function updateOperatorGreeting() {
-        const operatorName = localStorage.getItem('obsidian_operator_name') || 'Architect';
+        const rawName = localStorage.getItem('obsidian_operator_name') || 'Architect';
+        const operatorName = String(rawName).slice(0, 60);
         const welcomeEl = document.getElementById('welcome-header-display');
         if (welcomeEl) {
             if (currentLang === 'ar') {
@@ -551,10 +550,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateAvatarImages() {
-        const savedAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
-        const navAvatars = document.querySelectorAll('.profile-pic img');
+        const rawAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+        const safeAvatar = sanitizeAvatarUrl(rawAvatar);
+        const navAvatars = document.querySelectorAll('#nav-avatar-img, .profile-pic img');
         navAvatars.forEach(img => {
-            img.src = savedAvatar;
+            img.src = safeAvatar;
         });
     }
 
@@ -573,7 +573,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const key = el.getAttribute('data-i18n');
             if (translations[lang] && translations[lang][key]) {
                 if (key === 'welcome_header') {
-                    // Handled specially
                     updateOperatorGreeting();
                 } else {
                     el.textContent = translations[lang][key];
@@ -626,28 +625,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function showToast(message, isError = false) {
         const toast = document.getElementById('toast-notification');
         if (!toast) return;
-        toast.textContent = message;
+        toast.textContent = String(message || '');
         toast.style.borderColor = isError ? 'var(--accent-alert)' : 'var(--primary)';
         toast.style.color = isError ? 'var(--accent-alert)' : 'var(--text-main)';
         toast.classList.add('show');
         setTimeout(() => {
             toast.classList.remove('show');
-        }, 3200);
-    }
-
-    // Defensive Security: HTML Sanitizer for user-provided strings
-    function escapeHTML(str) {
-        if (str === null || str === undefined) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#039;');
+        }, 3500);
     }
 
     // --------------------------------------------------------------------------
-    // 5. Time & Date Utility Parsers
+    // 6. Time & Date Utility Parsers
     // --------------------------------------------------------------------------
     function normalizeDay(dayStr) {
         if (!dayStr) return 'Sun';
@@ -707,25 +695,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    function updateAvatarImages() {
-        const avatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
-        const avatarImgs = document.querySelectorAll('#nav-avatar-img, .profile-pic img, #auth-user-avatar');
-        avatarImgs.forEach(img => {
-            img.src = avatar;
-        });
-    }
-
-    function updateOperatorGreeting() {
-        const welcomeHeader = document.getElementById('welcome-header-display');
-        if (!welcomeHeader) return;
-        const name = localStorage.getItem('obsidian_operator_name') || 'Architect';
-        if (currentLang === 'ar') {
-            welcomeHeader.textContent = `مرحبًا بعودتك يا ${name}.`;
-        } else {
-            welcomeHeader.textContent = `Welcome back ${name}.`;
-        }
-    }
-
     function updateDateDisplay() {
         const dateEl = document.getElementById('schedule-date');
         if (!dateEl) return;
@@ -738,32 +707,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 6. Dashboard Counters & Live Next-Class Banner
+    // 7. Dashboard Counters & Live Next-Class Banner
     // --------------------------------------------------------------------------
     function updateDashboardCounters() {
         const todayClassesCounter = document.getElementById('today-classes-counter');
         const todayTasksCounter = document.getElementById('today-tasks-counter');
         const thisWeekTasksCounter = document.getElementById('this-week-tasks-counter');
 
-        const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
-        const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
+        const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
         const currentTime = getCurrentTimeSnapshot();
 
         // 1. Classes Today
         const todayClassesCount = classes.filter(c => {
+            if (!c) return false;
             const parsed = parseClassTime(c.date);
             return parsed.day === currentTime.dayAbbreviation;
         }).length;
 
         // 2. Tasks Due Today
         const todayTasksCount = tasks.filter(t => {
-            if (t.completed) return false;
+            if (!t || t.completed) return false;
             const taskDay = normalizeDay(t.date);
             return taskDay === currentTime.dayAbbreviation;
         }).length;
 
-        // 3. Tasks Due This Active Week (accurate window)
-        const activeWeekTasksCount = tasks.filter(t => !t.completed).length;
+        // 3. Tasks Due This Active Week
+        const activeWeekTasksCount = tasks.filter(t => t && !t.completed).length;
 
         if (todayClassesCounter) todayClassesCounter.textContent = todayClassesCount;
         if (todayTasksCounter) todayTasksCounter.textContent = todayTasksCount;
@@ -776,11 +746,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const timerText = document.getElementById('live-countdown-timer');
         if (!banner || !statusText || !timerText) return;
 
-        const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
         const now = getCurrentTimeSnapshot();
         const t = translations[currentLang];
 
         const todayClasses = classes
+            .filter(Boolean)
             .map(c => ({ ...c, parsed: parseClassTime(c.date) }))
             .filter(c => c.parsed.day === now.dayAbbreviation)
             .sort((a, b) => a.parsed.startMinutes - b.parsed.startMinutes);
@@ -818,21 +789,20 @@ document.addEventListener('DOMContentLoaded', () => {
         timerText.textContent = "DONE";
     }
 
-    // Run live countdown clock every 20 seconds
     setInterval(updateLiveCountdown, 20000);
 
     // --------------------------------------------------------------------------
-    // 7. Render Schedule & Priority Tasks (Dashboard)
+    // 8. Render Schedule & Priority Tasks (Dashboard) - XSS Hardened
     // --------------------------------------------------------------------------
     function renderSchedule() {
         const timelineContainer = document.getElementById('dashboard-schedule');
         if (!timelineContainer) return;
 
         const currentTime = getCurrentTimeSnapshot();
-        const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
         const t = translations[currentLang];
 
-        const parsedClasses = classes.map(classItem => {
+        const parsedClasses = classes.filter(Boolean).map(classItem => {
             const parsed = parseClassTime(classItem.date);
             return { ...classItem, parsed };
         });
@@ -849,14 +819,15 @@ document.addEventListener('DOMContentLoaded', () => {
         timelineContainer.innerHTML = '';
 
         if (displayClasses.length === 0) {
-            timelineContainer.innerHTML = `
-                <div class="timeline-item">
-                    <div class="dot"></div>
-                    <div class="card">
-                        <h1 style="font-size: 1.25rem; margin: 0;">${t.no_classes_indexed}</h1>
-                        <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">${t.no_classes_indexed_sub}</p>
-                    </div>
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'timeline-item';
+            emptyDiv.innerHTML = `
+                <div class="dot"></div>
+                <div class="card">
+                    <h1 style="font-size: 1.25rem; margin: 0;">${escapeHTML(t.no_classes_indexed)}</h1>
+                    <p style="opacity: 0.5; margin: 0; font-size: 0.9rem;">${escapeHTML(t.no_classes_indexed_sub)}</p>
                 </div>`;
+            timelineContainer.appendChild(emptyDiv);
             return;
         }
 
@@ -872,7 +843,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="${cardClass}">
                     <span class="time">${isTodaySchedule ? '' : `${escapeHTML(classItem.parsed.day)} • `}${escapeHTML(classItem.parsed.startTime)} - ${escapeHTML(classItem.parsed.endTime)}</span>
                     <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${escapeHTML(classItem.title)} ${classItem.code ? `(${escapeHTML(classItem.code)})` : ''}</h1>
-                    <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `${t.instructor_label}${escapeHTML(classItem.instructor)}` : ''}</p>
+                    <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `${escapeHTML(t.instructor_label)}${escapeHTML(classItem.instructor)}` : ''}</p>
                 </div>
             `;
             timelineContainer.appendChild(itemDiv);
@@ -883,20 +854,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const tasksContainer = document.getElementById('dashboard-tasks');
         if (!tasksContainer) return;
 
-        const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
         const t = translations[currentLang];
         tasksContainer.innerHTML = '';
 
-        if (currentTasks.length === 0) {
-            tasksContainer.innerHTML = `
-                <div class="smallcard">
-                    <h3 style="margin: 0;">${t.no_tasks}</h3>
-                    <p style="opacity: 0.5; margin: 0; font-size: 0.85rem;">${t.no_tasks_sub}</p>
-                </div>`;
+        const validTasks = currentTasks.filter(Boolean);
+
+        if (validTasks.length === 0) {
+            const emptyCard = document.createElement('div');
+            emptyCard.className = 'smallcard';
+            emptyCard.innerHTML = `
+                <h3 style="margin: 0;">${escapeHTML(t.no_tasks)}</h3>
+                <p style="opacity: 0.5; margin: 0; font-size: 0.85rem;">${escapeHTML(t.no_tasks_sub)}</p>
+            `;
+            tasksContainer.appendChild(emptyCard);
             return;
         }
 
-        currentTasks.slice(0, 4).forEach(taskItem => {
+        validTasks.slice(0, 4).forEach(taskItem => {
             const cardDiv = document.createElement('div');
             cardDiv.className = 'smallcard';
             cardDiv.innerHTML = `
@@ -911,7 +886,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 8. Filter & Search Engine (My Classes page)
+    // 9. Filter & Search Engine (My Classes page)
     // --------------------------------------------------------------------------
     let activeDayFilter = 'all';
     let activeTaskFilter = 'all';
@@ -922,10 +897,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskFilterChips = document.getElementById('task-filter-chips');
 
     if (searchInput) {
+        // Explicitly clear value and disable browser autofill/autocomplete
+        searchInput.value = '';
+        activeSearchQuery = '';
+        searchInput.setAttribute('autocomplete', 'off');
+        searchInput.setAttribute('autocorrect', 'off');
+        searchInput.setAttribute('autocapitalize', 'off');
+        searchInput.setAttribute('spellcheck', 'false');
+
         searchInput.addEventListener('input', (e) => {
             activeSearchQuery = e.target.value.trim().toLowerCase();
             renderClassesList();
             renderTasksList();
+        });
+
+        // Ensure search input is cleared whenever the page is loaded or restored from cache
+        window.addEventListener('pageshow', () => {
+            if (searchInput) {
+                searchInput.value = '';
+                activeSearchQuery = '';
+                renderClassesList();
+                renderTasksList();
+            }
         });
     }
 
@@ -952,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 9. Render Classes & Tasks Hub (My Classes page)
+    // 10. Render Classes & Tasks Hub (My Classes page) - XSS Hardened
     // --------------------------------------------------------------------------
     const classesListContainer = document.getElementById('classes-list');
     const tasksListContainer = document.getElementById('tasks-list');
@@ -962,8 +955,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const classesProgressFill = document.getElementById('classes-progress-fill');
 
     function updateProgressMetrics() {
-        const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
-        const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
+        const currentClasses = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
         const t = translations[currentLang];
 
         if (classesProgressPercentage) {
@@ -974,7 +967,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const totalTasks = currentTasks.length;
-        const completedTasks = currentTasks.filter(task => task.completed).length;
+        const completedTasks = currentTasks.filter(task => task && task.completed).length;
         const percent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
 
         if (tasksProgressPercentage) {
@@ -987,12 +980,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderClassesList() {
         if (!classesListContainer) return;
-        const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        const currentClasses = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
         const t = translations[currentLang];
         const now = getCurrentTimeSnapshot();
 
-        // Apply filters
         const filtered = currentClasses.filter(c => {
+            if (!c) return false;
             const parsed = parseClassTime(c.date);
             const matchesDay = activeDayFilter === 'all' || 
                 (activeDayFilter === 'today' && parsed.day === now.dayAbbreviation) ||
@@ -1010,28 +1003,32 @@ document.addEventListener('DOMContentLoaded', () => {
         classesListContainer.innerHTML = '';
 
         if (filtered.length === 0) {
-            classesListContainer.innerHTML = `
-                <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem;">
-                    <p style="color: var(--text-muted); margin: 0;">${t.no_classes_empty}</p>
-                </div>`;
+            const emptyCard = document.createElement('div');
+            emptyCard.className = 'card';
+            emptyCard.style.gridColumn = '1 / -1';
+            emptyCard.style.textAlign = 'center';
+            emptyCard.style.padding = '2rem';
+            emptyCard.innerHTML = `<p style="color: var(--text-muted); margin: 0;">${escapeHTML(t.no_classes_empty)}</p>`;
+            classesListContainer.appendChild(emptyCard);
             return;
         }
 
         filtered.forEach((item) => {
-            const originalIndex = currentClasses.indexOf(item);
+            const itemId = item.id || ('cls_' + Math.random().toString(36).slice(2, 8));
+            item.id = itemId;
             const card = document.createElement('article');
             card.className = 'card';
-            card.dataset.index = originalIndex;
+            card.dataset.id = itemId;
             card.innerHTML = `
                 <div class="card-header-flex">
                     <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem;">${escapeHTML(item.title)}</h3>
                     ${item.code ? `<span style="color: var(--primary); font-size: 0.85rem; font-weight: 700;">${escapeHTML(item.code)}</span>` : ''}
                 </div>
-                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `${t.instructor_label}${escapeHTML(item.instructor)}` : `${t.instructor_label}${t.not_assigned}`}</p>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `${escapeHTML(t.instructor_label)}${escapeHTML(item.instructor)}` : `${escapeHTML(t.instructor_label)}${escapeHTML(t.not_assigned)}`}</p>
                 <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">${escapeHTML(item.date || t.no_schedule_set)}</p>
                 <div class="card-actions">
-                    <button class="edit-btn" data-action="edit-class" data-index="${originalIndex}">${t.btn_edit}</button>
-                    <button class="delete-btn" data-action="delete-class" data-index="${originalIndex}">${t.btn_delete}</button>
+                    <button class="edit-btn" data-action="edit-class" data-id="${itemId}">${escapeHTML(t.btn_edit)}</button>
+                    <button class="delete-btn" data-action="delete-class" data-id="${itemId}">${escapeHTML(t.btn_delete)}</button>
                 </div>
             `;
             classesListContainer.appendChild(card);
@@ -1040,11 +1037,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderTasksList() {
         if (!tasksListContainer) return;
-        const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
         const t = translations[currentLang];
 
-        // Apply filters
         const filtered = currentTasks.filter(task => {
+            if (!task) return false;
             const matchesStatus = activeTaskFilter === 'all' ||
                 (activeTaskFilter === 'active' && !task.completed) ||
                 (activeTaskFilter === 'completed' && task.completed);
@@ -1061,50 +1058,50 @@ document.addEventListener('DOMContentLoaded', () => {
         tasksListContainer.innerHTML = '';
 
         if (filtered.length === 0) {
-            tasksListContainer.innerHTML = `
-                <div class="task-item" style="text-align: center; padding: 2rem; justify-content: center;">
-                    <p style="color: var(--text-muted); margin: 0;">${t.no_tasks_empty}</p>
-                </div>`;
+            const emptyTask = document.createElement('div');
+            emptyTask.className = 'task-item';
+            emptyTask.style.textAlign = 'center';
+            emptyTask.style.padding = '2rem';
+            emptyTask.style.justifyContent = 'center';
+            emptyTask.innerHTML = `<p style="color: var(--text-muted); margin: 0;">${escapeHTML(t.no_tasks_empty)}</p>`;
+            tasksListContainer.appendChild(emptyTask);
             return;
         }
 
         filtered.forEach((task) => {
-            const originalIndex = currentTasks.indexOf(task);
+            const taskId = task.id || ('tsk_' + Math.random().toString(36).slice(2, 8));
+            task.id = taskId;
             const taskCard = document.createElement('div');
             taskCard.className = `task-item ${task.completed ? 'completed' : ''}`;
-            taskCard.dataset.index = originalIndex;
+            taskCard.dataset.id = taskId;
             taskCard.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
-                    <input type="checkbox" class="task-checkbox" data-index="${originalIndex}" ${task.completed ? 'checked' : ''}>
+                    <input type="checkbox" class="task-checkbox" data-id="${taskId}" ${task.completed ? 'checked' : ''}>
                     <div style="flex: 1;">
                         <h3 style="margin: 0 0 0.35rem 0; ${task.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHTML(task.title)}</h3>
                         <p style="margin: 0 0 0.35rem 0; font-size: 0.85rem;">${escapeHTML(task.description || t.no_desc)}</p>
-                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${t.due_label}${escapeHTML(task.date || t.no_date_set)}</span>
+                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${escapeHTML(t.due_label)}${escapeHTML(task.date || t.no_date_set)}</span>
                     </div>
                 </div>
                 <div class="card-actions" style="margin-top: 0;">
-                    <button class="edit-btn" data-action="edit-task" data-index="${originalIndex}">${t.btn_edit}</button>
-                    <button class="delete-btn" data-action="delete-task" data-index="${originalIndex}">${t.btn_delete}</button>
+                    <button class="edit-btn" data-action="edit-task" data-id="${taskId}">${escapeHTML(t.btn_edit)}</button>
+                    <button class="delete-btn" data-action="delete-task" data-id="${taskId}">${escapeHTML(t.btn_delete)}</button>
                 </div>
             `;
             tasksListContainer.appendChild(taskCard);
         });
     }
 
-    // CRUD Handlers for Classes & Tasks
+    // CRUD Event Listeners
     if (classesListContainer && tasksListContainer) {
-        tasksListContainer.addEventListener('change', async (e) => {
-            if (e.target.classList.contains('task-checkbox')) {
-                const index = Number(e.target.dataset.index);
-                const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
-                if (currentTasks[index]) {
-                    const isCompleted = e.target.checked;
-                    currentTasks[index].completed = isCompleted;
-                    
-                    if (window.ObsidianAuth && window.ObsidianAuth.currentUser && currentTasks[index].id) {
-                        await window.ObsidianAuth.updateTask(currentTasks[index].id, { completed: isCompleted });
-                    }
-
+        tasksListContainer.addEventListener('change', (e) => {
+            const chk = e.target.closest('.task-checkbox');
+            if (chk) {
+                const targetId = chk.dataset.id;
+                const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
+                const task = currentTasks.find(t => t && t.id === targetId);
+                if (task) {
+                    task.completed = chk.checked;
                     localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                     renderTasksList();
                     updateProgressMetrics();
@@ -1115,64 +1112,57 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Edit/Delete Classes
-        classesListContainer.addEventListener('click', async (e) => {
-            const target = e.target;
-            const index = Number(target.dataset.index);
-            const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+        classesListContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            const targetId = target.dataset.id;
+            const currentClasses = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
             const t = translations[currentLang];
-            const item = currentClasses[index];
+            const item = currentClasses.find(c => c && c.id === targetId);
 
             if (target.dataset.action === 'delete-class') {
-                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
-                    await window.ObsidianAuth.deleteClass(item.id);
-                }
-                currentClasses.splice(index, 1);
-                localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
+                const updatedClasses = currentClasses.filter(c => c && c.id !== targetId);
+                localStorage.setItem('obsidianClasses', JSON.stringify(updatedClasses));
                 renderClassesList();
                 updateProgressMetrics();
                 renderNotifications();
                 updateDashboardCounters();
                 showToast(t.toast_class_deleted);
-            } else if (target.dataset.action === 'edit-class') {
+            } else if (target.dataset.action === 'edit-class' && item) {
                 const card = target.closest('.card');
                 card.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                        <input type="text" id="edit-class-title-${index}" value="${item.title}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_class_title}">
-                        <input type="text" id="edit-class-code-${index}" value="${item.code || ''}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_class_code}">
-                        <input type="text" id="edit-class-instructor-${index}" value="${item.instructor || ''}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_class_instructor}">
-                        <input type="text" id="edit-class-date-${index}" value="${item.date || ''}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM - HH:MM">
+                        <input type="text" id="edit-class-title-${targetId}" value="${escapeHTML(item.title)}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_title)}">
+                        <input type="text" id="edit-class-code-${targetId}" value="${escapeHTML(item.code || '')}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_code)}">
+                        <input type="text" id="edit-class-instructor-${targetId}" value="${escapeHTML(item.instructor || '')}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_class_instructor)}">
+                        <input type="text" id="edit-class-date-${targetId}" value="${escapeHTML(item.date || '')}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM - HH:MM">
                         <div class="card-actions">
-                            <button class="edit-btn" data-action="save-class" data-index="${index}">${t.btn_save}</button>
-                            <button class="delete-btn" data-action="cancel-class" data-index="${index}">${t.btn_cancel}</button>
+                            <button class="edit-btn" data-action="save-class" data-id="${targetId}">${escapeHTML(t.btn_save)}</button>
+                            <button class="delete-btn" data-action="cancel-class" data-id="${targetId}">${escapeHTML(t.btn_cancel)}</button>
                         </div>
                     </div>
                 `;
-            } else if (target.dataset.action === 'save-class') {
-                const titleVal = document.getElementById(`edit-class-title-${index}`).value.trim();
-                const codeVal = document.getElementById(`edit-class-code-${index}`).value.trim();
-                const instructorVal = document.getElementById(`edit-class-instructor-${index}`).value.trim();
-                const dateVal = document.getElementById(`edit-class-date-${index}`).value.trim();
+            } else if (target.dataset.action === 'save-class' && item) {
+                const titleInput = document.getElementById(`edit-class-title-${targetId}`);
+                const codeInput = document.getElementById(`edit-class-code-${targetId}`);
+                const instructorInput = document.getElementById(`edit-class-instructor-${targetId}`);
+                const dateInput = document.getElementById(`edit-class-date-${targetId}`);
+
+                const titleVal = titleInput ? titleInput.value.trim().slice(0, 250) : '';
+                const codeVal = codeInput ? codeInput.value.trim().slice(0, 100) : '';
+                const instructorVal = instructorInput ? instructorInput.value.trim().slice(0, 250) : '';
+                const dateVal = dateInput ? dateInput.value.trim().slice(0, 250) : '';
 
                 if (!titleVal) {
                     showToast(t.toast_title_req, true);
                     return;
                 }
 
-                const updatedClassData = {
-                    title: titleVal,
-                    code: codeVal,
-                    instructor: instructorVal,
-                    date: dateVal
-                };
+                item.title = titleVal;
+                item.code = codeVal;
+                item.instructor = instructorVal;
+                item.date = dateVal;
 
-                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
-                    await window.ObsidianAuth.updateClass(item.id, updatedClassData);
-                }
-
-                currentClasses[index] = {
-                    ...currentClasses[index],
-                    ...updatedClassData
-                };
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
                 renderNotifications();
@@ -1184,61 +1174,53 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Edit/Delete Tasks
-        tasksListContainer.addEventListener('click', async (e) => {
-            const target = e.target;
-            const index = Number(target.dataset.index);
-            const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        tasksListContainer.addEventListener('click', (e) => {
+            const target = e.target.closest('[data-action]');
+            if (!target) return;
+            const targetId = target.dataset.id;
+            const currentTasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
             const t = translations[currentLang];
-            const item = currentTasks[index];
+            const item = currentTasks.find(t => t && t.id === targetId);
 
             if (target.dataset.action === 'delete-task') {
-                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
-                    await window.ObsidianAuth.deleteTask(item.id);
-                }
-                currentTasks.splice(index, 1);
-                localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
+                const updatedTasks = currentTasks.filter(t => t && t.id !== targetId);
+                localStorage.setItem('obsidianTasks', JSON.stringify(updatedTasks));
                 renderTasksList();
                 updateProgressMetrics();
                 renderNotifications();
                 updateDashboardCounters();
                 showToast(t.toast_task_deleted);
-            } else if (target.dataset.action === 'edit-task') {
+            } else if (target.dataset.action === 'edit-task' && item) {
                 const taskCard = target.closest('.task-item');
                 taskCard.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
-                        <input type="text" id="edit-task-title-${index}" value="${item.title}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_task_title}">
-                        <textarea id="edit-task-desc-${index}" class="contact-textarea" style="padding: 0.4rem; height: 60px;" placeholder="${t.label_task_desc}">${item.description || ''}</textarea>
-                        <input type="text" id="edit-task-date-${index}" value="${item.date || ''}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM">
+                        <input type="text" id="edit-task-title-${targetId}" value="${escapeHTML(item.title)}" class="class-input" style="padding: 0.4rem;" placeholder="${escapeHTML(t.label_task_title)}">
+                        <textarea id="edit-task-desc-${targetId}" class="contact-textarea" style="padding: 0.4rem; height: 60px;" placeholder="${escapeHTML(t.label_task_desc)}">${escapeHTML(item.description || '')}</textarea>
+                        <input type="text" id="edit-task-date-${targetId}" value="${escapeHTML(item.date || '')}" class="class-input" style="padding: 0.4rem;" placeholder="Day, HH:MM">
                         <div class="card-actions">
-                            <button class="edit-btn" data-action="save-task" data-index="${index}">${t.btn_save}</button>
-                            <button class="delete-btn" data-action="cancel-task" data-index="${index}">${t.btn_cancel}</button>
+                            <button class="edit-btn" data-action="save-task" data-id="${targetId}">${escapeHTML(t.btn_save)}</button>
+                            <button class="delete-btn" data-action="cancel-task" data-id="${targetId}">${escapeHTML(t.btn_cancel)}</button>
                         </div>
                     </div>
                 `;
-            } else if (target.dataset.action === 'save-task') {
-                const titleVal = document.getElementById(`edit-task-title-${index}`).value.trim();
-                const descVal = document.getElementById(`edit-task-desc-${index}`).value.trim();
-                const dateVal = document.getElementById(`edit-task-date-${index}`).value.trim();
+            } else if (target.dataset.action === 'save-task' && item) {
+                const titleInput = document.getElementById(`edit-task-title-${targetId}`);
+                const descInput = document.getElementById(`edit-task-desc-${targetId}`);
+                const dateInput = document.getElementById(`edit-task-date-${targetId}`);
+
+                const titleVal = titleInput ? titleInput.value.trim().slice(0, 250) : '';
+                const descVal = descInput ? descInput.value.trim().slice(0, 1000) : '';
+                const dateVal = dateInput ? dateInput.value.trim().slice(0, 250) : '';
 
                 if (!titleVal) {
                     showToast(t.toast_task_title_req, true);
                     return;
                 }
 
-                const updatedTaskData = {
-                    title: titleVal,
-                    description: descVal,
-                    date: dateVal
-                };
+                item.title = titleVal;
+                item.description = descVal;
+                item.date = dateVal;
 
-                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
-                    await window.ObsidianAuth.updateTask(item.id, updatedTaskData);
-                }
-
-                currentTasks[index] = {
-                    ...currentTasks[index],
-                    ...updatedTaskData
-                };
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
                 renderNotifications();
@@ -1251,7 +1233,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 10. Add Class & Add Task Form Flow (add class.html)
+    // 11. Add Class & Task Form Handlers
     // --------------------------------------------------------------------------
     const tabCourseBtn = document.getElementById('tab-course-btn');
     const tabTaskBtn = document.getElementById('tab-task-btn');
@@ -1274,15 +1256,15 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add Course submit
-        addCourseForm.addEventListener('submit', async (e) => {
+        addCourseForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const t = translations[currentLang];
-            const title = document.getElementById('course-name').value.trim();
-            const code = document.getElementById('course-code').value.trim();
+            const title = document.getElementById('course-name').value.trim().slice(0, 250);
+            const code = document.getElementById('course-code').value.trim().slice(0, 100);
             const day = document.getElementById('course-day').value;
             const startTime = document.getElementById('start-time').value;
             const endTime = document.getElementById('end-time').value;
-            const instructor = document.getElementById('instructor').value.trim();
+            const instructor = document.getElementById('instructor').value.trim().slice(0, 250);
 
             if (!title) {
                 showToast(t.toast_title_req, true);
@@ -1294,18 +1276,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newClass = {
+                id: generateUniqueId('cls'),
                 title,
                 code,
                 instructor,
                 date: `${day.slice(0, 3)}, ${startTime} - ${endTime}`
             };
 
-            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
-                const cloudId = await window.ObsidianAuth.addClass(newClass);
-                if (cloudId) newClass.id = cloudId;
-            }
-
-            const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+            const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
             classes.push(newClass);
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
 
@@ -1316,13 +1294,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add Task submit
-        addTaskForm.addEventListener('submit', async (e) => {
+        addTaskForm.addEventListener('submit', (e) => {
             e.preventDefault();
             const t = translations[currentLang];
-            const title = document.getElementById('task-name').value.trim();
+            const title = document.getElementById('task-name').value.trim().slice(0, 250);
             const day = document.getElementById('task-day').value;
             const time = document.getElementById('task-time').value;
-            const description = document.getElementById('task-desc').value.trim();
+            const description = document.getElementById('task-desc').value.trim().slice(0, 1000);
 
             if (!title) {
                 showToast(t.toast_task_title_req, true);
@@ -1330,18 +1308,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newTask = {
+                id: generateUniqueId('tsk'),
                 title,
                 description,
                 date: `${day.slice(0, 3)}, ${time || '23:59'}`,
                 completed: false
             };
 
-            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
-                const cloudId = await window.ObsidianAuth.addTask(newTask);
-                if (cloudId) newTask.id = cloudId;
-            }
-
-            const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+            const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
             tasks.push(newTask);
             localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
 
@@ -1378,7 +1352,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     setupCustomTimePickers();
 
-    // Standalone Add Class / Task page handling
+    // Standalone Add Class / Task Page Support
     const addClassBtn = document.getElementById('add-class-btn');
     const discardClassBtn = document.getElementById('discard-class-btn') || document.getElementById('discard-btn');
     const classTitleInput = document.getElementById('class-title') || document.getElementById('class-name');
@@ -1389,12 +1363,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const classEndTimeInput = document.getElementById('class-end-time') || document.getElementById('end-time');
 
     if (addClassBtn && classTitleInput) {
-        addClassBtn.addEventListener('click', async (e) => {
+        addClassBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const t = translations[currentLang];
-            const title = classTitleInput.value.trim();
-            const code = classCodeInput ? classCodeInput.value.trim() : '';
-            const instructor = classInstructorInput ? classInstructorInput.value.trim() : '';
+            const title = classTitleInput.value.trim().slice(0, 250);
+            const code = classCodeInput ? classCodeInput.value.trim().slice(0, 100) : '';
+            const instructor = classInstructorInput ? classInstructorInput.value.trim().slice(0, 250) : '';
             const day = classDaySelect ? classDaySelect.value : 'Monday';
             const startTime = classStartTimeInput ? classStartTimeInput.value : '';
             const endTime = classEndTimeInput ? classEndTimeInput.value : '';
@@ -1409,21 +1383,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newClass = {
+                id: generateUniqueId('cls'),
                 title,
                 code,
                 instructor,
                 date: `${day.slice(0, 3)}, ${startTime} - ${endTime}`
             };
 
-            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
-                const cloudId = await window.ObsidianAuth.addClass(newClass);
-                if (cloudId) newClass.id = cloudId;
-            }
-
-            const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
+            const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
             classes.push(newClass);
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
-            localStorage.setItem('obsidian_backup_classes', JSON.stringify(classes));
 
             showToast(t.toast_class_indexed);
             setTimeout(() => {
@@ -1447,13 +1416,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const taskDescDirect = document.getElementById('task-description') || document.getElementById('task-desc');
 
     if (addTaskDirectBtn && taskTitleDirect) {
-        addTaskDirectBtn.addEventListener('click', async (e) => {
+        addTaskDirectBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const t = translations[currentLang];
-            const title = taskTitleDirect.value.trim();
+            const title = taskTitleDirect.value.trim().slice(0, 250);
             const day = taskDayDirect ? taskDayDirect.value : 'Monday';
             const time = taskTimeDirect ? taskTimeDirect.value : '23:59';
-            const description = taskDescDirect ? taskDescDirect.value.trim() : '';
+            const description = taskDescDirect ? taskDescDirect.value.trim().slice(0, 1000) : '';
 
             if (!title) {
                 showToast(t.toast_task_title_req, true);
@@ -1461,21 +1430,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const newTask = {
+                id: generateUniqueId('tsk'),
                 title,
                 description,
                 date: `${day.slice(0, 3)}, ${time || '23:59'}`,
                 completed: false
             };
 
-            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
-                const cloudId = await window.ObsidianAuth.addTask(newTask);
-                if (cloudId) newTask.id = cloudId;
-            }
-
-            const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+            const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
             tasks.push(newTask);
             localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
-            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(tasks));
 
             showToast(t.toast_task_indexed);
             setTimeout(() => {
@@ -1492,7 +1456,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 11. Notification Bell System
+    // 12. Notification Bell System
     // --------------------------------------------------------------------------
     const bellBtn = document.getElementById('bell-btn');
     const bellBadge = document.getElementById('bell-badge');
@@ -1502,8 +1466,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function renderNotifications() {
         if (!notifList) return;
-        const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
-        const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+        const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
+        const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
         const now = getCurrentTimeSnapshot();
         const t = translations[currentLang];
 
@@ -1511,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const alertIdList = [];
 
         // 1. Classes today
-        classes.forEach(c => {
+        classes.filter(Boolean).forEach(c => {
             const parsed = parseClassTime(c.date);
             if (parsed.day === now.dayAbbreviation) {
                 const id = `class_${c.title}_${parsed.day}_${parsed.startTime}`;
@@ -1526,7 +1490,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // 2. Pending Tasks
-        tasks.filter(t => !t.completed).forEach(tk => {
+        tasks.filter(t => t && !t.completed).forEach(tk => {
             const taskDay = normalizeDay(tk.date);
             const isToday = taskDay === now.dayAbbreviation;
             const id = `task_${tk.title}_${tk.date}`;
@@ -1542,13 +1506,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
         notifList.innerHTML = '';
 
-        // Check if user dismissed notifications for current state
         const dismissedHash = localStorage.getItem('obsidian_notifs_dismissed_hash');
         const currentAlertsHash = alertIdList.sort().join('|');
 
         if (dismissedHash === currentAlertsHash && alerts.length > 0) {
             if (bellBadge) bellBadge.classList.add('hidden');
-            notifList.innerHTML = `<p class="notif-empty">${t.notif_empty}</p>`;
+            notifList.innerHTML = `<p class="notif-empty">${escapeHTML(t.notif_empty)}</p>`;
             return;
         }
 
@@ -1562,7 +1525,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (alerts.length === 0) {
-            notifList.innerHTML = `<p class="notif-empty">${t.notif_empty}</p>`;
+            notifList.innerHTML = `<p class="notif-empty">${escapeHTML(t.notif_empty)}</p>`;
             return;
         }
 
@@ -1591,31 +1554,31 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (notifClearBtn) {
             notifClearBtn.addEventListener('click', () => {
-                const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
-                const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+                const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
+                const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
                 const now = getCurrentTimeSnapshot();
                 const alertIdList = [];
 
-                classes.forEach(c => {
+                classes.filter(Boolean).forEach(c => {
                     const parsed = parseClassTime(c.date);
                     if (parsed.day === now.dayAbbreviation) {
                         alertIdList.push(`class_${c.title}_${parsed.day}_${parsed.startTime}`);
                     }
                 });
-                tasks.filter(t => !t.completed).forEach(tk => {
+                tasks.filter(t => t && !t.completed).forEach(tk => {
                     alertIdList.push(`task_${tk.title}_${tk.date}`);
                 });
 
                 localStorage.setItem('obsidian_notifs_dismissed_hash', alertIdList.sort().join('|'));
 
                 if (bellBadge) bellBadge.classList.add('hidden');
-                notifList.innerHTML = `<p class="notif-empty">${translations[currentLang].notif_empty}</p>`;
+                notifList.innerHTML = `<p class="notif-empty">${escapeHTML(translations[currentLang].notif_empty)}</p>`;
             });
         }
     }
 
     // --------------------------------------------------------------------------
-    // 12. Operator Profile Customization Modal & Custom Avatar Upload
+    // 13. Operator Profile Customization Modal & Custom Avatar Upload
     // --------------------------------------------------------------------------
     const profilePicBtn = document.getElementById('profile-pic-btn');
     const profileModal = document.getElementById('profile-modal');
@@ -1623,14 +1586,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileCancelBtn = document.getElementById('profile-cancel-btn');
     const profileForm = document.getElementById('profile-form');
     const operatorNameInput = document.getElementById('operator-name-input');
-    const avatarOpts = document.querySelectorAll('.avatar-opt');
     const customAvatarOpt = document.getElementById('custom-avatar-opt');
     const customAvatarPreviewImg = document.getElementById('custom-avatar-preview-img');
     const customAvatarInput = document.getElementById('custom-avatar-input');
     const btnTriggerUpload = document.getElementById('btn-trigger-upload');
     const avatarDropZone = document.getElementById('avatar-drop-zone');
 
-    let selectedAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+    let selectedAvatar = sanitizeAvatarUrl(localStorage.getItem('obsidian_avatar') || 'photos/avatar.png');
 
     function syncAvatarSelectionUI() {
         const isCustom = selectedAvatar.startsWith('data:') || (selectedAvatar.startsWith('http') && !selectedAvatar.includes('photos/'));
@@ -1655,7 +1617,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (operatorNameInput) {
                 operatorNameInput.value = localStorage.getItem('obsidian_operator_name') || 'Architect';
             }
-            selectedAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+            selectedAvatar = sanitizeAvatarUrl(localStorage.getItem('obsidian_avatar') || 'photos/avatar.png');
             syncAvatarSelectionUI();
             profileModal.classList.add('open');
         });
@@ -1671,18 +1633,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === profileModal) closeProfileModal();
         });
 
-        // Click on preset or custom avatar options
         const allOpts = document.querySelectorAll('.avatar-opt');
         allOpts.forEach(opt => {
             opt.addEventListener('click', () => {
                 const currentOpts = document.querySelectorAll('.avatar-opt');
                 currentOpts.forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
-                selectedAvatar = opt.dataset.avatar;
+                selectedAvatar = sanitizeAvatarUrl(opt.dataset.avatar);
             });
         });
 
-        // Trigger file input on button click or dropzone click
         if (btnTriggerUpload && customAvatarInput) {
             btnTriggerUpload.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -1696,7 +1656,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // Drag and drop handlers
             ['dragenter', 'dragover'].forEach(eventName => {
                 avatarDropZone.addEventListener(eventName, (e) => {
                     e.preventDefault();
@@ -1746,7 +1705,6 @@ document.addEventListener('DOMContentLoaded', () => {
             reader.onload = (e) => {
                 const img = new Image();
                 img.onload = () => {
-                    // Downscale into canvas for performant Base64 storage
                     const canvas = document.createElement('canvas');
                     const maxDim = 256;
                     let width = img.width;
@@ -1770,12 +1728,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     ctx.drawImage(img, 0, 0, width, height);
 
                     const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
-                    selectedAvatar = compressedDataUrl;
+                    selectedAvatar = sanitizeAvatarUrl(compressedDataUrl);
 
                     if (customAvatarOpt && customAvatarPreviewImg) {
                         customAvatarOpt.style.display = 'block';
-                        customAvatarOpt.dataset.avatar = compressedDataUrl;
-                        customAvatarPreviewImg.src = compressedDataUrl;
+                        customAvatarOpt.dataset.avatar = selectedAvatar;
+                        customAvatarPreviewImg.src = selectedAvatar;
                     }
 
                     syncAvatarSelectionUI();
@@ -1787,19 +1745,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         if (profileForm) {
-            profileForm.addEventListener('submit', async (e) => {
+            profileForm.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const newName = operatorNameInput.value.trim() || 'Architect';
+                const newName = (operatorNameInput ? operatorNameInput.value.trim().slice(0, 60) : '') || 'Architect';
                 localStorage.setItem('obsidian_operator_name', newName);
                 localStorage.setItem('obsidian_avatar', selectedAvatar);
 
-                if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
-                    await window.ObsidianAuth.saveUserProfile(newName, selectedAvatar);
-                }
-
                 updateAvatarImages();
                 updateOperatorGreeting();
-                updateAuthModalState();
                 closeProfileModal();
                 showToast(translations[currentLang].toast_profile_saved);
             });
@@ -1807,15 +1760,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 13. Data Backup / Restore Engine (JSON Export / Import)
+    // 14. Data Backup / Restore Engine (TASK 3: Strict Schema & File Bounds)
     // --------------------------------------------------------------------------
     const exportDataBtn = document.getElementById('export-data-btn');
     const importDataFile = document.getElementById('import-data-file');
+    const MAX_IMPORT_SIZE_BYTES = 2 * 1024 * 1024; // Strict 2MB ceiling
 
     if (exportDataBtn) {
         exportDataBtn.addEventListener('click', () => {
-            const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
-            const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
+            const classes = safeJSONParse(localStorage.getItem('obsidianClasses'), []);
+            const tasks = safeJSONParse(localStorage.getItem('obsidianTasks'), []);
             const operatorName = localStorage.getItem('obsidian_operator_name') || 'Architect';
 
             const payload = {
@@ -1841,40 +1795,68 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (importDataFile) {
         importDataFile.addEventListener('change', (e) => {
-            const file = e.target.files[0];
+            const file = e.target.files && e.target.files[0];
             if (!file) return;
+
+            // 1. File Size Boundary Check
+            if (file.size > MAX_IMPORT_SIZE_BYTES) {
+                showToast("Backup file exceeds 2MB maximum limit.", true);
+                importDataFile.value = '';
+                return;
+            }
+
+            // 2. MIME & Extension Check
+            if (!file.name.toLowerCase().endsWith('.json') && file.type !== 'application/json' && file.type !== '') {
+                showToast("Invalid file type. Only JSON backup files are permitted.", true);
+                importDataFile.value = '';
+                return;
+            }
 
             const reader = new FileReader();
             reader.onload = (event) => {
                 try {
-                    const parsed = JSON.parse(event.target.result);
-                    if (Array.isArray(parsed.classes)) {
-                        localStorage.setItem('obsidianClasses', JSON.stringify(parsed.classes));
-                    }
-                    if (Array.isArray(parsed.tasks)) {
-                        localStorage.setItem('obsidianTasks', JSON.stringify(parsed.tasks));
-                    }
-                    if (parsed.operatorName) {
-                        localStorage.setItem('obsidian_operator_name', parsed.operatorName);
+                    const rawContent = event.target.result;
+                    if (typeof rawContent !== 'string' || rawContent.length > MAX_IMPORT_SIZE_BYTES) {
+                        throw new Error("Payload size limit exceeded");
                     }
 
-                    renderClassesList();
-                    renderTasksList();
-                    updateProgressMetrics();
-                    updateDashboardCounters();
-                    renderNotifications();
-                    updateOperatorGreeting();
+                    const parsed = safeJSONParse(rawContent, null);
+                    const validation = validateBackupSchema(parsed);
+
+                    if (!validation.valid || !validation.sanitized) {
+                        throw new Error(validation.error || "Schema validation failed");
+                    }
+
+                    const { classes, tasks, operatorName } = validation.sanitized;
+
+                    // Write validated & bounded data
+                    localStorage.setItem('obsidianClasses', JSON.stringify(classes));
+                    localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
+                    if (operatorName) {
+                        localStorage.setItem('obsidian_operator_name', operatorName);
+                    }
+
+                    refreshAllViews();
                     showToast(translations[currentLang].toast_import_ok);
                 } catch (err) {
+                    console.error("Backup import error:", err);
                     showToast(translations[currentLang].toast_import_err, true);
+                } finally {
+                    importDataFile.value = '';
                 }
             };
+
+            reader.onerror = () => {
+                showToast("Failed to read file from disk.", true);
+                importDataFile.value = '';
+            };
+
             reader.readAsText(file);
         });
     }
 
     // --------------------------------------------------------------------------
-    // 14. FAQ View Switching & Transmission Portal
+    // 15. FAQ View Switching & Hardened Transmission Portal (TASK 1)
     // --------------------------------------------------------------------------
     const faqList = document.getElementById('faq-list');
     const faqDetail = document.getElementById('faq-detail');
@@ -1903,7 +1885,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Contact Form Transmission
+    // Hardened Contact Form Transmission with Turnstile Token
     const contactForm = document.getElementById('contact-form');
     if (contactForm) {
         contactForm.addEventListener('submit', async (e) => {
@@ -1916,10 +1898,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = document.getElementById('contact-submit-btn');
             const errorMsg = document.getElementById('contact-error-message');
 
-            const name = nameInput ? nameInput.value.trim() : '';
-            const email = emailInput ? emailInput.value.trim() : '';
-            const subject = subjectInput ? subjectInput.value.trim() : 'General Inquiry';
-            const message = messageInput ? messageInput.value.trim() : '';
+            const name = nameInput ? nameInput.value.trim().slice(0, 60) : '';
+            const email = emailInput ? emailInput.value.trim().slice(0, 100) : '';
+            const subject = subjectInput ? subjectInput.value.trim().slice(0, 120) : 'General Inquiry';
+            const message = messageInput ? messageInput.value.trim().slice(0, 1500) : '';
+
+            // Extract Cloudflare Turnstile token from hidden form input if present
+            const turnstileInput = contactForm.querySelector('[name="cf-turnstile-response"]') || 
+                                   document.querySelector('[name="cf-turnstile-response"]');
+            const turnstileToken = turnstileInput ? turnstileInput.value : '';
 
             if (!name || !email || !message) {
                 if (errorMsg) errorMsg.textContent = t.toast_contact_req;
@@ -1936,19 +1923,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 const response = await fetch('/api/contact', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, email, subject, message })
+                    body: JSON.stringify({ name, email, subject, message, turnstileToken })
                 });
+
+                const resData = await response.json().catch(() => ({}));
 
                 if (response.ok) {
                     showToast(t.toast_discord_ok);
                     contactForm.reset();
+                    if (window.turnstile && typeof window.turnstile.reset === 'function') {
+                        window.turnstile.reset();
+                    }
                     if (errorMsg) errorMsg.textContent = "";
                 } else {
-                    showToast(t.toast_discord_err, true);
+                    const errMsg = resData.error || t.toast_discord_err;
+                    if (errorMsg) errorMsg.textContent = errMsg;
+                    showToast(errMsg, true);
+                    if (window.turnstile && typeof window.turnstile.reset === 'function') {
+                        window.turnstile.reset();
+                    }
                 }
             } catch (err) {
                 showToast(t.toast_discord_net_err);
                 contactForm.reset();
+                if (window.turnstile && typeof window.turnstile.reset === 'function') {
+                    window.turnstile.reset();
+                }
             } finally {
                 if (submitBtn) {
                     submitBtn.disabled = false;
@@ -1958,349 +1958,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // "View All" Button on Dashboard
+    // "View All" Navigation Button
     const viewAllTasksBtn = document.getElementById('view-all-tasks');
     if (viewAllTasksBtn) {
         viewAllTasksBtn.addEventListener('click', () => {
             window.location.href = 'classes.html';
         });
     }
-
-    // --------------------------------------------------------------------------
-    // 15. Authentication & Cloud Sync Engine (Firebase Modal & UI Sync)
-    // --------------------------------------------------------------------------
-    const authModalBtn = document.getElementById('auth-modal-btn');
-    const authModal = document.getElementById('auth-modal');
-    const authModalClose = document.getElementById('auth-modal-close');
-    const authCancelBtn = document.getElementById('auth-cancel-btn');
-    const authLoggedInView = document.getElementById('auth-logged-in-view');
-    const authFormsView = document.getElementById('auth-forms-view');
-    const authTabLogin = document.getElementById('auth-tab-login');
-    const authTabRegister = document.getElementById('auth-tab-register');
-    const groupAuthName = document.getElementById('group-auth-name');
-    const authSubmitBtn = document.getElementById('auth-submit-btn');
-    const authToggleActionBtn = document.getElementById('auth-toggle-action-btn');
-    const authEmailForm = document.getElementById('auth-email-form');
-    const btnGoogleAuth = document.getElementById('btn-google-auth');
-    const btnGoogleRedirect = document.getElementById('btn-google-redirect');
-    const btnAuthSignout = document.getElementById('btn-auth-signout');
-    const navSyncIndicator = document.getElementById('nav-sync-indicator');
-    const navAuthLabel = document.getElementById('nav-auth-label');
-
-    function openAuthModal() {
-        if (authModal) {
-            updateAuthModalState();
-            authModal.classList.add('open');
-        }
-    }
-
-    function closeAuthModal() {
-        if (authModal) {
-            authModal.classList.remove('open');
-        }
-    }
-
-    function updateAuthModalState() {
-        const user = window.ObsidianAuth ? window.ObsidianAuth.currentUser : null;
-        const t = translations[currentLang];
-        const profilePicBtns = document.querySelectorAll('#profile-pic-btn, .profile-pic');
-
-        if (user) {
-            if (authLoggedInView) authLoggedInView.style.display = 'block';
-            if (authFormsView) authFormsView.style.display = 'none';
-
-            const authUserDisplayName = document.getElementById('auth-user-display-name');
-            const authUserEmail = document.getElementById('auth-user-email');
-            const authUserAvatar = document.getElementById('auth-user-avatar');
-
-            const name = user.displayName || localStorage.getItem('obsidian_operator_name') || 'Architect';
-            const avatar = localStorage.getItem('obsidian_avatar') || user.photoURL || 'photos/avatar.png';
-
-            if (authUserDisplayName) authUserDisplayName.textContent = name;
-            if (authUserEmail) authUserEmail.textContent = user.email || 'operator@terminal.io';
-            if (authUserAvatar) authUserAvatar.src = avatar;
-
-            if (navSyncIndicator) {
-                navSyncIndicator.classList.remove('offline');
-                navSyncIndicator.title = t.status_synced;
-            }
-            if (navAuthLabel) {
-                navAuthLabel.textContent = name.split(' ')[0] || t.btn_account;
-            }
-
-            // Reveal profile photo in top navigation bar
-            profilePicBtns.forEach(btn => {
-                btn.style.display = 'flex';
-                btn.classList.add('logged-in');
-            });
-        } else {
-            if (authLoggedInView) authLoggedInView.style.display = 'none';
-            if (authFormsView) authFormsView.style.display = 'block';
-
-            if (navSyncIndicator) {
-                navSyncIndicator.classList.add('offline');
-                navSyncIndicator.title = t.status_guest;
-            }
-            if (navAuthLabel) {
-                navAuthLabel.textContent = t.btn_signin_cloud;
-            }
-
-            // Hide profile photo when not authenticated
-            profilePicBtns.forEach(btn => {
-                btn.style.display = 'none';
-                btn.classList.remove('logged-in');
-            });
-        }
-    }
-
-    if (authModalBtn) authModalBtn.addEventListener('click', openAuthModal);
-    if (authModalClose) authModalClose.addEventListener('click', closeAuthModal);
-    if (authCancelBtn) authCancelBtn.addEventListener('click', closeAuthModal);
-    if (authModal) {
-        authModal.addEventListener('click', (e) => {
-            if (e.target === authModal) closeAuthModal();
-        });
-    }
-
-    // Auth Error Sanitizer & Localizer
-    function getFriendlyAuthError(err) {
-        const t = translations[currentLang];
-        const msg = ((err && err.code) || (err && err.message) || '').toLowerCase();
-        const currentHost = window.location.hostname || 'localhost';
-        const isExternalHost = currentHost.includes('vercel.app') || 
-                               currentHost.includes('github.io') || 
-                               (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('.run.app'));
-
-        const domainNotice = document.getElementById('auth-domain-notice');
-
-        if (msg.includes('unauthorized-domain')) {
-            if (domainNotice) domainNotice.classList.remove('hidden');
-            return t.toast_auth_unauthorized_domain;
-        }
-        if (msg.includes('operation-not-allowed')) {
-            return t.toast_auth_op_not_allowed;
-        }
-        if (msg.includes('popup-blocked')) {
-            return t.toast_auth_popup_blocked;
-        }
-        if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
-            if (isExternalHost && domainNotice) {
-                domainNotice.classList.remove('hidden');
-            }
-            return t.toast_auth_popup_closed;
-        }
-        return (err && err.message) || t.toast_auth_error;
-    }
-
-    // Initialize Domain Helper & Custom Firebase Config in Auth Modal
-    function initDomainAuthorizationHelper() {
-        const hostnameDisplay = document.getElementById('current-hostname-display');
-        const copyHostBtn = document.getElementById('btn-copy-hostname');
-        const domainNotice = document.getElementById('auth-domain-notice');
-        const toggleConfigBtn = document.getElementById('btn-toggle-custom-config');
-        const customConfigContainer = document.getElementById('auth-custom-config-container');
-        const customConfigTextarea = document.getElementById('custom-firebase-json');
-        const saveConfigBtn = document.getElementById('btn-save-firebase-config');
-        const resetConfigBtn = document.getElementById('btn-reset-firebase-config');
-
-        const currentHost = window.location.hostname || 'localhost';
-        if (hostnameDisplay) {
-            hostnameDisplay.textContent = currentHost;
-        }
-
-        // Show domain helper if deployed on Vercel, GitHub Pages, or external custom domain
-        if (domainNotice) {
-            const isExternalHost = currentHost.includes('vercel.app') || 
-                                   currentHost.includes('github.io') || 
-                                   (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('.run.app'));
-            if (isExternalHost) {
-                domainNotice.classList.remove('hidden');
-            }
-        }
-
-        if (copyHostBtn) {
-            copyHostBtn.addEventListener('click', async () => {
-                const t = translations[currentLang];
-                try {
-                    await navigator.clipboard.writeText(currentHost);
-                    copyHostBtn.textContent = t.btn_copied || "Copied!";
-                    showToast(t.toast_domain_copied || "Domain copied to clipboard!");
-                    setTimeout(() => {
-                        copyHostBtn.textContent = t.btn_copy || "Copy";
-                    }, 2000);
-                } catch (clipErr) {
-                    showToast(currentHost);
-                }
-            });
-        }
-
-        if (toggleConfigBtn && customConfigContainer) {
-            toggleConfigBtn.addEventListener('click', () => {
-                const isHidden = customConfigContainer.style.display === 'none';
-                customConfigContainer.style.display = isHidden ? 'block' : 'none';
-                if (isHidden && customConfigTextarea && window.ObsidianAuth) {
-                    const activeCfg = window.ObsidianAuth.getActiveConfig();
-                    customConfigTextarea.value = JSON.stringify(activeCfg, null, 2);
-                }
-            });
-        }
-
-        if (saveConfigBtn && customConfigTextarea) {
-            saveConfigBtn.addEventListener('click', () => {
-                const t = translations[currentLang];
-                const raw = customConfigTextarea.value.trim();
-                try {
-                    const parsed = JSON.parse(raw);
-                    if (window.ObsidianAuth) {
-                        window.ObsidianAuth.saveCustomConfig(parsed);
-                        showToast(t.toast_config_saved || "Configuration saved! Reloading...");
-                    }
-                } catch (e) {
-                    showToast(t.toast_config_invalid || "Invalid JSON configuration format.", true);
-                }
-            });
-        }
-
-        if (resetConfigBtn) {
-            resetConfigBtn.addEventListener('click', () => {
-                const t = translations[currentLang];
-                if (window.ObsidianAuth) {
-                    window.ObsidianAuth.resetToDefaultConfig();
-                    showToast(t.toast_config_reset || "Configuration reset to default.");
-                }
-            });
-        }
-    }
-
-    initDomainAuthorizationHelper();
-
-    // Google Sign In (Popup)
-    if (btnGoogleAuth) {
-        btnGoogleAuth.addEventListener('click', async () => {
-            const t = translations[currentLang];
-            try {
-                btnGoogleAuth.disabled = true;
-                btnGoogleAuth.style.opacity = '0.7';
-                const res = await window.ObsidianAuth.signInWithGoogle();
-                if (res && (res.uid || res.user)) {
-                    showToast(t.toast_auth_signin_ok);
-                    closeAuthModal();
-                }
-            } catch (err) {
-                console.error(err);
-                showToast(getFriendlyAuthError(err), true);
-            } finally {
-                btnGoogleAuth.disabled = false;
-                btnGoogleAuth.style.opacity = '1';
-            }
-        });
-    }
-
-    // Google Sign In (Redirect Fallback for popup-blockers or mobile)
-    if (btnGoogleRedirect) {
-        btnGoogleRedirect.addEventListener('click', async () => {
-            try {
-                btnGoogleRedirect.disabled = true;
-                btnGoogleRedirect.style.opacity = '0.7';
-                await window.ObsidianAuth.signInWithGoogleRedirect();
-            } catch (err) {
-                console.error(err);
-                showToast(getFriendlyAuthError(err), true);
-                btnGoogleRedirect.disabled = false;
-                btnGoogleRedirect.style.opacity = '1';
-            }
-        });
-    }
-
-    // Email / Password & Magic Link Handlers
-    const btnEmailSignin = document.getElementById('btn-email-signin');
-    const btnEmailSignup = document.getElementById('btn-email-signup');
-    const btnMagicLink = document.getElementById('btn-magic-link');
-    const authEmailInput = document.getElementById('auth-email-input');
-    const authPasswordInput = document.getElementById('auth-password-input');
-
-    if (btnEmailSignin) {
-        btnEmailSignin.addEventListener('click', async () => {
-            const email = authEmailInput ? authEmailInput.value.trim() : '';
-            const password = authPasswordInput ? authPasswordInput.value.trim() : '';
-            if (!email || !password) {
-                showToast('Please enter both email and password.', true);
-                return;
-            }
-            try {
-                btnEmailSignin.disabled = true;
-                await window.ObsidianAuth.signInWithEmail(email, password);
-                showToast('Signed in successfully!');
-                closeAuthModal();
-            } catch (err) {
-                showToast(getFriendlyAuthError(err), true);
-            } finally {
-                btnEmailSignin.disabled = false;
-            }
-        });
-    }
-
-    if (btnEmailSignup) {
-        btnEmailSignup.addEventListener('click', async () => {
-            const email = authEmailInput ? authEmailInput.value.trim() : '';
-            const password = authPasswordInput ? authPasswordInput.value.trim() : '';
-            if (!email || !password) {
-                showToast('Please enter both email and password.', true);
-                return;
-            }
-            try {
-                btnEmailSignup.disabled = true;
-                await window.ObsidianAuth.signUpWithEmail(email, password);
-                showToast('Account created! Check your email or sign in.');
-                closeAuthModal();
-            } catch (err) {
-                showToast(getFriendlyAuthError(err), true);
-            } finally {
-                btnEmailSignup.disabled = false;
-            }
-        });
-    }
-
-    if (btnMagicLink) {
-        btnMagicLink.addEventListener('click', async () => {
-            const email = authEmailInput ? authEmailInput.value.trim() : '';
-            if (!email) {
-                showToast('Please enter your email address first.', true);
-                return;
-            }
-            try {
-                btnMagicLink.disabled = true;
-                await window.ObsidianAuth.sendMagicLink(email);
-                showToast('Magic link sent to your email!');
-            } catch (err) {
-                showToast(getFriendlyAuthError(err), true);
-            } finally {
-                btnMagicLink.disabled = false;
-            }
-        });
-    }
-
-    // Sign Out
-    if (btnAuthSignout) {
-        btnAuthSignout.addEventListener('click', async () => {
-            const t = translations[currentLang];
-            try {
-                await window.ObsidianAuth.signOut();
-                showToast(t.toast_auth_signout_ok);
-                closeAuthModal();
-            } catch (err) {
-                console.error(err);
-                showToast(err.message || 'Error signing out', true);
-            }
-        });
-    }
-
-    // Listen to Security Session Timeout
-    window.addEventListener('obsidian-session-timeout', () => {
-        const t = translations[currentLang];
-        showToast(t.toast_session_timeout || 'Session timed out due to inactivity.', true);
-        updateAuthModalState();
-    });
 
     // Global UI Refresh Dispatcher
     function refreshAllViews() {
@@ -2314,50 +1978,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (typeof updateLiveCountdown === 'function') updateLiveCountdown();
         if (typeof updateOperatorGreeting === 'function') updateOperatorGreeting();
         if (typeof updateAvatarImages === 'function') updateAvatarImages();
-        if (typeof updateAuthModalState === 'function') updateAuthModalState();
     }
     window.ObsidianUI = {
         refreshUI: refreshAllViews
     };
 
-    // Listen to Firebase Auth & Cloud Data Events from firebase-sync.js
-    window.addEventListener('obsidian-auth-state-changed', (e) => {
-        refreshAllViews();
-    });
-
-    window.addEventListener('obsidian-auth-redirect-success', () => {
-        const t = translations[currentLang];
-        showToast(t.toast_auth_signin_ok);
-        closeAuthModal();
-        refreshAllViews();
-    });
-
-    window.addEventListener('obsidian-auth-redirect-error', (e) => {
-        const err = e.detail && e.detail.error;
-        showToast(getFriendlyAuthError(err), true);
-    });
-
-    window.addEventListener('obsidian-data-updated', () => {
-        refreshAllViews();
-    });
-
-    window.addEventListener('obsidian-cloud-data-synced', (e) => {
-        const { classes, tasks } = e.detail || {};
-        if (classes) {
-            localStorage.setItem('obsidianClasses', JSON.stringify(classes));
-            localStorage.setItem('obsidian_backup_classes', JSON.stringify(classes));
-        }
-        if (tasks) {
-            localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
-            localStorage.setItem('obsidian_backup_tasks', JSON.stringify(tasks));
-        }
-        refreshAllViews();
-    });
-
-    // Initial Engine Trigger
+    // Initial Engine Bootstrap
     setLanguage(currentLang);
     updateAvatarImages();
     updateOperatorGreeting();
-    updateAuthModalState();
     refreshAllViews();
 });
