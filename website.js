@@ -112,6 +112,11 @@ document.addEventListener('DOMContentLoaded', () => {
             profile_modal_title: "Operator Terminal Profile",
             operator_name_label: "Call-Sign / Architect Name",
             choose_avatar_label: "Select System Avatar",
+            custom_photo_label: "Or Upload Custom Photo",
+            btn_choose_photo: "Choose Photo",
+            upload_hint: "Supports PNG, JPG, WebP. Click or drag to change.",
+            toast_photo_loaded: "Custom photo loaded! Click Save Profile to apply.",
+            toast_photo_too_large: "Image exceeds 5MB. Please choose a smaller image.",
             btn_export_data: "Export Backup (JSON)",
             btn_import_data: "Import Backup",
             toast_profile_saved: "Operator profile updated.",
@@ -121,7 +126,35 @@ document.addEventListener('DOMContentLoaded', () => {
             live_status_in_session: "● IN SESSION:",
             live_status_upcoming: "⏱ NEXT NODE:",
             live_status_concluded: "✓ ALL NODES CONCLUDED FOR TODAY",
-            live_status_none: "○ NO LECTURES SCHEDULED TODAY"
+            live_status_none: "○ NO LECTURES SCHEDULED TODAY",
+            btn_signin_cloud: "Sign In / Sync",
+            btn_account: "Account",
+            auth_modal_title: "Cloud Synchronization & Account",
+            tab_login: "Sign In",
+            tab_register: "Create Account",
+            btn_google_signin: "Continue with Google",
+            auth_or: "OR EMAIL TRANSMISSION",
+            label_operator_name: "Architect Name / Call-Sign",
+            label_password: "Password:",
+            btn_signin: "Sign In",
+            btn_register: "Create Account",
+            auth_no_account: "Need a terminal account?",
+            auth_has_account: "Already registered?",
+            auth_create_one: "Create one",
+            auth_signin_link: "Sign in",
+            btn_signout: "Sign Out of Terminal",
+            status_synced: "Synced",
+            status_guest: "Guest (Offline)",
+            auth_sync_desc: "Your classes and task objectives are synchronized in real-time across all your devices.",
+            toast_auth_signin_ok: "Terminal authenticated. Cloud synchronization active.",
+            toast_auth_register_ok: "Architect account created! Synchronizing data...",
+            toast_auth_signout_ok: "Signed out of terminal.",
+            toast_auth_error: "Authentication error. Please check credentials.",
+            toast_session_timeout: "Session timed out due to inactivity. Terminal locked safely.",
+            toast_auth_weak_pass: "Password must be at least 6 characters.",
+            toast_auth_invalid_email: "Please enter a valid email address.",
+            toast_auth_user_not_found: "Invalid credentials or account does not exist.",
+            toast_auth_email_in_use: "This email address is already registered. Please sign in."
         },
         ar: {
             logo: "المهندس أوبسيديان",
@@ -232,6 +265,11 @@ document.addEventListener('DOMContentLoaded', () => {
             profile_modal_title: "الملف التعريفي للمهندس",
             operator_name_label: "اسم المهندس / نداء المحطة",
             choose_avatar_label: "اختر صورة الرمز",
+            custom_photo_label: "أو ارفع صورة مخصصة من جهازك",
+            btn_choose_photo: "اختيار صورة",
+            upload_hint: "يدعم PNG، JPG، WebP. انقر أو اسحب لتغيير الصورة.",
+            toast_photo_loaded: "تم تحميل صورتك المخصصة! اضغط حفظ الملف الشخصي لتطبيقها.",
+            toast_photo_too_large: "حجم الصورة يتجاوز 5 ميجابايت. يرجى اختيار صورة أصغر.",
             btn_export_data: "تصدير نسخة احتياطية (JSON)",
             btn_import_data: "استيراد نسخة",
             toast_profile_saved: "تم حفظ الملف التعريفي بنجاح.",
@@ -241,7 +279,35 @@ document.addEventListener('DOMContentLoaded', () => {
             live_status_in_session: "● قيد الانعقاد:",
             live_status_upcoming: "⏱ المحاضرة القادمة:",
             live_status_concluded: "✓ انتهت جميع محاضرات اليوم",
-            live_status_none: "○ لا توجد محاضرات مجدولة لليوم"
+            live_status_none: "○ لا توجد محاضرات مجدولة لليوم",
+            btn_signin_cloud: "تسجيل الدخول / المزامنة",
+            btn_account: "حسابي",
+            auth_modal_title: "المزامنة السحابية والحساب",
+            tab_login: "تسجيل الدخول",
+            tab_register: "إنشاء حساب جديد",
+            btn_google_signin: "المتابعة باستخدام Google",
+            auth_or: "أو عبر البريد الإلكتروني",
+            label_operator_name: "اسم المهندس / نداء المحطة",
+            label_password: "كلمة المرور:",
+            btn_signin: "تسجيل الدخول",
+            btn_register: "إنشاء الحساب",
+            auth_no_account: "لا تمتلك حساب محطة؟",
+            auth_has_account: "لديك حساب بالفعل؟",
+            auth_create_one: "أنشئ حسابك الآن",
+            auth_signin_link: "تسجيل الدخول",
+            btn_signout: "تسجيل الخروج من المحطة",
+            status_synced: "متصل وسحابي",
+            status_guest: "وضع الضيف (محلي)",
+            auth_sync_desc: "يتم حفظ ومزامنة محاضراتك ومهامك في الوقت الفعلي عبر جميع أجهزتك.",
+            toast_auth_signin_ok: "تم تسجيل الدخول بنجاح. المزامنة السحابية نشطة الآن.",
+            toast_auth_register_ok: "تم إنشاء حساب المهندس بنجاح! جاري مزامنة البيانات...",
+            toast_auth_signout_ok: "تم تسجيل الخروج بنجاح.",
+            toast_auth_error: "خطأ في تسجيل الدخول. يرجى التحقق من صحة البيانات.",
+            toast_session_timeout: "انتهت صلاحية الجلسة لعدم النشاط. تم قفل المحطة بأمان.",
+            toast_auth_weak_pass: "يجب ألا تقل كلمة المرور عن 6 أحرف.",
+            toast_auth_invalid_email: "يرجى إدخال عنوان بريد إلكتروني صالح.",
+            toast_auth_user_not_found: "بيانات الدخول غير صحيحة أو الحساب غير موجود.",
+            toast_auth_email_in_use: "هذا البريد مسجل بالفعل. يرجى تسجيل الدخول بدلاً من ذلك."
         }
     };
 
@@ -460,6 +526,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 3200);
     }
 
+    // Defensive Security: HTML Sanitizer for user-provided strings
+    function escapeHTML(str) {
+        if (str === null || str === undefined) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
     // --------------------------------------------------------------------------
     // 5. Time & Date Utility Parsers
     // --------------------------------------------------------------------------
@@ -519,6 +596,25 @@ document.addEventListener('DOMContentLoaded', () => {
             year,
             currentMinutes
         };
+    }
+
+    function updateAvatarImages() {
+        const avatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+        const avatarImgs = document.querySelectorAll('#nav-avatar-img, .profile-pic img, #auth-user-avatar');
+        avatarImgs.forEach(img => {
+            img.src = avatar;
+        });
+    }
+
+    function updateOperatorGreeting() {
+        const welcomeHeader = document.getElementById('welcome-header-display');
+        if (!welcomeHeader) return;
+        const name = localStorage.getItem('obsidian_operator_name') || 'Architect';
+        if (currentLang === 'ar') {
+            welcomeHeader.textContent = `مرحبًا بعودتك يا ${name}.`;
+        } else {
+            welcomeHeader.textContent = `Welcome back ${name}.`;
+        }
     }
 
     function updateDateDisplay() {
@@ -665,9 +761,9 @@ document.addEventListener('DOMContentLoaded', () => {
             itemDiv.innerHTML = `
                 <div class="${dotClass}"></div>
                 <div class="${cardClass}">
-                    <span class="time">${isTodaySchedule ? '' : `${classItem.parsed.day} • `}${classItem.parsed.startTime} - ${classItem.parsed.endTime}</span>
-                    <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${classItem.title} ${classItem.code ? `(${classItem.code})` : ''}</h1>
-                    <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `${t.instructor_label}${classItem.instructor}` : ''}</p>
+                    <span class="time">${isTodaySchedule ? '' : `${escapeHTML(classItem.parsed.day)} • `}${escapeHTML(classItem.parsed.startTime)} - ${escapeHTML(classItem.parsed.endTime)}</span>
+                    <h1 style="font-size: 1.2rem; margin: 0.25rem 0 0 0;">${escapeHTML(classItem.title)} ${classItem.code ? `(${escapeHTML(classItem.code)})` : ''}</h1>
+                    <p style="opacity: 0.5; margin: 4px 0 0 0; font-size: 0.85rem;">${classItem.instructor ? `${t.instructor_label}${escapeHTML(classItem.instructor)}` : ''}</p>
                 </div>
             `;
             timelineContainer.appendChild(itemDiv);
@@ -696,10 +792,10 @@ document.addEventListener('DOMContentLoaded', () => {
             cardDiv.className = 'smallcard';
             cardDiv.innerHTML = `
                 <div>
-                    <h3 style="margin: 0; font-size: 1rem; ${taskItem.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${taskItem.title}</h3>
-                    <p style="opacity: 0.5; font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">${taskItem.description || ''}</p>
+                    <h3 style="margin: 0; font-size: 1rem; ${taskItem.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${escapeHTML(taskItem.title)}</h3>
+                    <p style="opacity: 0.5; font-size: 0.85rem; margin-top: 4px; margin-bottom: 0;">${escapeHTML(taskItem.description || '')}</p>
                 </div>
-                <span style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">${taskItem.date || ''}</span>
+                <span style="font-size: 0.85rem; color: var(--primary); font-weight: 600;">${escapeHTML(taskItem.date || '')}</span>
             `;
             tasksContainer.appendChild(cardDiv);
         });
@@ -819,11 +915,11 @@ document.addEventListener('DOMContentLoaded', () => {
             card.dataset.index = originalIndex;
             card.innerHTML = `
                 <div class="card-header-flex">
-                    <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem;">${item.title}</h3>
-                    ${item.code ? `<span style="color: var(--primary); font-size: 0.85rem; font-weight: 700;">${item.code}</span>` : ''}
+                    <h3 style="margin: 0; color: var(--text-main); font-size: 1.1rem;">${escapeHTML(item.title)}</h3>
+                    ${item.code ? `<span style="color: var(--primary); font-size: 0.85rem; font-weight: 700;">${escapeHTML(item.code)}</span>` : ''}
                 </div>
-                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `${t.instructor_label}${item.instructor}` : `${t.instructor_label}${t.not_assigned}`}</p>
-                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">${item.date || t.no_schedule_set}</p>
+                <p style="margin: 0; font-size: 0.9rem; color: var(--text-muted);">${item.instructor ? `${t.instructor_label}${escapeHTML(item.instructor)}` : `${t.instructor_label}${t.not_assigned}`}</p>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">${escapeHTML(item.date || t.no_schedule_set)}</p>
                 <div class="card-actions">
                     <button class="edit-btn" data-action="edit-class" data-index="${originalIndex}">${t.btn_edit}</button>
                     <button class="delete-btn" data-action="delete-class" data-index="${originalIndex}">${t.btn_delete}</button>
@@ -872,9 +968,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div style="display: flex; align-items: center; gap: 1rem; width: 100%;">
                     <input type="checkbox" class="task-checkbox" data-index="${originalIndex}" ${task.completed ? 'checked' : ''}>
                     <div style="flex: 1;">
-                        <h3 style="margin: 0 0 0.35rem 0; ${task.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${task.title}</h3>
-                        <p style="margin: 0 0 0.35rem 0; font-size: 0.85rem;">${task.description || t.no_desc}</p>
-                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${t.due_label}${task.date || t.no_date_set}</span>
+                        <h3 style="margin: 0 0 0.35rem 0; ${task.completed ? 'text-decoration: line-through; opacity: 0.6;' : ''}">${escapeHTML(task.title)}</h3>
+                        <p style="margin: 0 0 0.35rem 0; font-size: 0.85rem;">${escapeHTML(task.description || t.no_desc)}</p>
+                        <span style="font-size: 0.75rem; color: var(--primary); font-weight: 600;">${t.due_label}${escapeHTML(task.date || t.no_date_set)}</span>
                     </div>
                 </div>
                 <div class="card-actions" style="margin-top: 0;">
@@ -888,12 +984,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // CRUD Handlers for Classes & Tasks
     if (classesListContainer && tasksListContainer) {
-        tasksListContainer.addEventListener('change', (e) => {
+        tasksListContainer.addEventListener('change', async (e) => {
             if (e.target.classList.contains('task-checkbox')) {
                 const index = Number(e.target.dataset.index);
                 const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
                 if (currentTasks[index]) {
-                    currentTasks[index].completed = e.target.checked;
+                    const isCompleted = e.target.checked;
+                    currentTasks[index].completed = isCompleted;
+                    
+                    if (window.ObsidianAuth && window.ObsidianAuth.currentUser && currentTasks[index].id) {
+                        await window.ObsidianAuth.updateTask(currentTasks[index].id, { completed: isCompleted });
+                    }
+
                     localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                     renderTasksList();
                     updateProgressMetrics();
@@ -904,13 +1006,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Edit/Delete Classes
-        classesListContainer.addEventListener('click', (e) => {
+        classesListContainer.addEventListener('click', async (e) => {
             const target = e.target;
             const index = Number(target.dataset.index);
             const currentClasses = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
             const t = translations[currentLang];
+            const item = currentClasses[index];
 
             if (target.dataset.action === 'delete-class') {
+                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
+                    await window.ObsidianAuth.deleteClass(item.id);
+                }
                 currentClasses.splice(index, 1);
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
@@ -920,7 +1026,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(t.toast_class_deleted);
             } else if (target.dataset.action === 'edit-class') {
                 const card = target.closest('.card');
-                const item = currentClasses[index];
                 card.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
                         <input type="text" id="edit-class-title-${index}" value="${item.title}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_class_title}">
@@ -944,11 +1049,20 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                currentClasses[index] = {
+                const updatedClassData = {
                     title: titleVal,
                     code: codeVal,
                     instructor: instructorVal,
                     date: dateVal
+                };
+
+                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
+                    await window.ObsidianAuth.updateClass(item.id, updatedClassData);
+                }
+
+                currentClasses[index] = {
+                    ...currentClasses[index],
+                    ...updatedClassData
                 };
                 localStorage.setItem('obsidianClasses', JSON.stringify(currentClasses));
                 renderClassesList();
@@ -961,13 +1075,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Edit/Delete Tasks
-        tasksListContainer.addEventListener('click', (e) => {
+        tasksListContainer.addEventListener('click', async (e) => {
             const target = e.target;
             const index = Number(target.dataset.index);
             const currentTasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
             const t = translations[currentLang];
+            const item = currentTasks[index];
 
             if (target.dataset.action === 'delete-task') {
+                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
+                    await window.ObsidianAuth.deleteTask(item.id);
+                }
                 currentTasks.splice(index, 1);
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
@@ -977,7 +1095,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast(t.toast_task_deleted);
             } else if (target.dataset.action === 'edit-task') {
                 const taskCard = target.closest('.task-item');
-                const item = currentTasks[index];
                 taskCard.innerHTML = `
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; width: 100%;">
                         <input type="text" id="edit-task-title-${index}" value="${item.title}" class="class-input" style="padding: 0.4rem;" placeholder="${t.label_task_title}">
@@ -999,11 +1116,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     return;
                 }
 
-                currentTasks[index] = {
-                    ...currentTasks[index],
+                const updatedTaskData = {
                     title: titleVal,
                     description: descVal,
                     date: dateVal
+                };
+
+                if (window.ObsidianAuth && window.ObsidianAuth.currentUser && item && item.id) {
+                    await window.ObsidianAuth.updateTask(item.id, updatedTaskData);
+                }
+
+                currentTasks[index] = {
+                    ...currentTasks[index],
+                    ...updatedTaskData
                 };
                 localStorage.setItem('obsidianTasks', JSON.stringify(currentTasks));
                 renderTasksList();
@@ -1040,7 +1165,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add Course submit
-        addCourseForm.addEventListener('submit', (e) => {
+        addCourseForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const t = translations[currentLang];
             const title = document.getElementById('course-name').value.trim();
@@ -1066,6 +1191,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: `${day.slice(0, 3)}, ${startTime} - ${endTime}`
             };
 
+            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
+                const cloudId = await window.ObsidianAuth.addClass(newClass);
+                if (cloudId) newClass.id = cloudId;
+            }
+
             const classes = JSON.parse(localStorage.getItem('obsidianClasses') || '[]');
             classes.push(newClass);
             localStorage.setItem('obsidianClasses', JSON.stringify(classes));
@@ -1077,7 +1207,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Add Task submit
-        addTaskForm.addEventListener('submit', (e) => {
+        addTaskForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const t = translations[currentLang];
             const title = document.getElementById('task-name').value.trim();
@@ -1096,6 +1226,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 date: `${day.slice(0, 3)}, ${time || '23:59'}`,
                 completed: false
             };
+
+            if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
+                const cloudId = await window.ObsidianAuth.addTask(newTask);
+                if (cloudId) newTask.id = cloudId;
+            }
 
             const tasks = JSON.parse(localStorage.getItem('obsidianTasks') || '[]');
             tasks.push(newTask);
@@ -1314,8 +1449,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const item = document.createElement('div');
             item.className = `notif-item ${alert.type === 'class' ? 'class-item' : ''} ${alert.urgent ? 'urgent' : ''}`;
             item.innerHTML = `
-                <span class="notif-title">${alert.title}</span>
-                <span class="notif-sub">${alert.sub}</span>
+                <span class="notif-title">${escapeHTML(alert.title)}</span>
+                <span class="notif-sub">${escapeHTML(alert.sub)}</span>
             `;
             notifList.appendChild(item);
         });
@@ -1359,7 +1494,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // --------------------------------------------------------------------------
-    // 12. Operator Profile Customization Modal
+    // 12. Operator Profile Customization Modal & Custom Avatar Upload
     // --------------------------------------------------------------------------
     const profilePicBtn = document.getElementById('profile-pic-btn');
     const profileModal = document.getElementById('profile-modal');
@@ -1368,21 +1503,39 @@ document.addEventListener('DOMContentLoaded', () => {
     const profileForm = document.getElementById('profile-form');
     const operatorNameInput = document.getElementById('operator-name-input');
     const avatarOpts = document.querySelectorAll('.avatar-opt');
+    const customAvatarOpt = document.getElementById('custom-avatar-opt');
+    const customAvatarPreviewImg = document.getElementById('custom-avatar-preview-img');
+    const customAvatarInput = document.getElementById('custom-avatar-input');
+    const btnTriggerUpload = document.getElementById('btn-trigger-upload');
+    const avatarDropZone = document.getElementById('avatar-drop-zone');
 
     let selectedAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+
+    function syncAvatarSelectionUI() {
+        const isCustom = selectedAvatar.startsWith('data:') || (selectedAvatar.startsWith('http') && !selectedAvatar.includes('photos/'));
+        if (isCustom && customAvatarOpt && customAvatarPreviewImg) {
+            customAvatarOpt.style.display = 'block';
+            customAvatarOpt.dataset.avatar = selectedAvatar;
+            customAvatarPreviewImg.src = selectedAvatar;
+        }
+
+        const allOpts = document.querySelectorAll('.avatar-opt');
+        allOpts.forEach(opt => {
+            if (opt.dataset.avatar === selectedAvatar) {
+                opt.classList.add('selected');
+            } else {
+                opt.classList.remove('selected');
+            }
+        });
+    }
 
     if (profilePicBtn && profileModal) {
         profilePicBtn.addEventListener('click', () => {
             if (operatorNameInput) {
                 operatorNameInput.value = localStorage.getItem('obsidian_operator_name') || 'Architect';
             }
-            avatarOpts.forEach(opt => {
-                if (opt.dataset.avatar === selectedAvatar) {
-                    opt.classList.add('selected');
-                } else {
-                    opt.classList.remove('selected');
-                }
-            });
+            selectedAvatar = localStorage.getItem('obsidian_avatar') || 'photos/avatar.png';
+            syncAvatarSelectionUI();
             profileModal.classList.add('open');
         });
 
@@ -1397,22 +1550,135 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target === profileModal) closeProfileModal();
         });
 
-        avatarOpts.forEach(opt => {
+        // Click on preset or custom avatar options
+        const allOpts = document.querySelectorAll('.avatar-opt');
+        allOpts.forEach(opt => {
             opt.addEventListener('click', () => {
-                avatarOpts.forEach(o => o.classList.remove('selected'));
+                const currentOpts = document.querySelectorAll('.avatar-opt');
+                currentOpts.forEach(o => o.classList.remove('selected'));
                 opt.classList.add('selected');
                 selectedAvatar = opt.dataset.avatar;
             });
         });
 
+        // Trigger file input on button click or dropzone click
+        if (btnTriggerUpload && customAvatarInput) {
+            btnTriggerUpload.addEventListener('click', (e) => {
+                e.stopPropagation();
+                customAvatarInput.click();
+            });
+        }
+        if (avatarDropZone && customAvatarInput) {
+            avatarDropZone.addEventListener('click', (e) => {
+                if (e.target !== btnTriggerUpload && !btnTriggerUpload.contains(e.target)) {
+                    customAvatarInput.click();
+                }
+            });
+
+            // Drag and drop handlers
+            ['dragenter', 'dragover'].forEach(eventName => {
+                avatarDropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    avatarDropZone.classList.add('dragover');
+                }, false);
+            });
+
+            ['dragleave', 'drop'].forEach(eventName => {
+                avatarDropZone.addEventListener(eventName, (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    avatarDropZone.classList.remove('dragover');
+                }, false);
+            });
+
+            avatarDropZone.addEventListener('drop', (e) => {
+                const dt = e.dataTransfer;
+                const files = dt.files;
+                if (files && files[0]) {
+                    handleAvatarFileUpload(files[0]);
+                }
+            });
+        }
+
+        if (customAvatarInput) {
+            customAvatarInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    handleAvatarFileUpload(e.target.files[0]);
+                }
+            });
+        }
+
+        function handleAvatarFileUpload(file) {
+            const t = translations[currentLang];
+            if (!file.type.startsWith('image/')) {
+                showToast(t.toast_photo_too_large || 'Please select an image file', true);
+                return;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                showToast(t.toast_photo_too_large, true);
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Downscale into canvas for performant Base64 storage
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 256;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height) {
+                        if (width > maxDim) {
+                            height = Math.round((height * maxDim) / width);
+                            width = maxDim;
+                        }
+                    } else {
+                        if (height > maxDim) {
+                            width = Math.round((width * maxDim) / height);
+                            height = maxDim;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+                    selectedAvatar = compressedDataUrl;
+
+                    if (customAvatarOpt && customAvatarPreviewImg) {
+                        customAvatarOpt.style.display = 'block';
+                        customAvatarOpt.dataset.avatar = compressedDataUrl;
+                        customAvatarPreviewImg.src = compressedDataUrl;
+                    }
+
+                    syncAvatarSelectionUI();
+                    showToast(t.toast_photo_loaded);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
         if (profileForm) {
-            profileForm.addEventListener('submit', (e) => {
+            profileForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 const newName = operatorNameInput.value.trim() || 'Architect';
                 localStorage.setItem('obsidian_operator_name', newName);
                 localStorage.setItem('obsidian_avatar', selectedAvatar);
+
+                if (window.ObsidianAuth && window.ObsidianAuth.currentUser) {
+                    await window.ObsidianAuth.saveUserProfile(newName, selectedAvatar);
+                }
+
                 updateAvatarImages();
                 updateOperatorGreeting();
+                updateAuthModalState();
                 closeProfileModal();
                 showToast(translations[currentLang].toast_profile_saved);
             });
@@ -1579,8 +1845,281 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --------------------------------------------------------------------------
+    // 15. Authentication & Cloud Sync Engine (Firebase Modal & UI Sync)
+    // --------------------------------------------------------------------------
+    const authModalBtn = document.getElementById('auth-modal-btn');
+    const authModal = document.getElementById('auth-modal');
+    const authModalClose = document.getElementById('auth-modal-close');
+    const authCancelBtn = document.getElementById('auth-cancel-btn');
+    const authLoggedInView = document.getElementById('auth-logged-in-view');
+    const authFormsView = document.getElementById('auth-forms-view');
+    const authTabLogin = document.getElementById('auth-tab-login');
+    const authTabRegister = document.getElementById('auth-tab-register');
+    const groupAuthName = document.getElementById('group-auth-name');
+    const authSubmitBtn = document.getElementById('auth-submit-btn');
+    const authToggleActionBtn = document.getElementById('auth-toggle-action-btn');
+    const authEmailForm = document.getElementById('auth-email-form');
+    const btnGoogleAuth = document.getElementById('btn-google-auth');
+    const btnAuthSignout = document.getElementById('btn-auth-signout');
+    const navSyncIndicator = document.getElementById('nav-sync-indicator');
+    const navAuthLabel = document.getElementById('nav-auth-label');
+
+    let currentAuthMode = 'login'; // 'login' or 'register'
+
+    function setAuthMode(mode) {
+        currentAuthMode = mode;
+        const t = translations[currentLang];
+        if (mode === 'login') {
+            if (authTabLogin) authTabLogin.classList.add('active');
+            if (authTabRegister) authTabRegister.classList.remove('active');
+            if (groupAuthName) groupAuthName.style.display = 'none';
+            if (authSubmitBtn) authSubmitBtn.textContent = t.btn_signin;
+            const toggleText = document.getElementById('auth-toggle-text');
+            if (toggleText) toggleText.textContent = t.auth_no_account;
+            if (authToggleActionBtn) authToggleActionBtn.textContent = t.auth_create_one;
+        } else {
+            if (authTabRegister) authTabRegister.classList.add('active');
+            if (authTabLogin) authTabLogin.classList.remove('active');
+            if (groupAuthName) groupAuthName.style.display = 'block';
+            if (authSubmitBtn) authSubmitBtn.textContent = t.btn_register;
+            const toggleText = document.getElementById('auth-toggle-text');
+            if (toggleText) toggleText.textContent = t.auth_has_account;
+            if (authToggleActionBtn) authToggleActionBtn.textContent = t.auth_signin_link;
+        }
+    }
+
+    function openAuthModal() {
+        if (authModal) {
+            updateAuthModalState();
+            authModal.classList.add('open');
+        }
+    }
+
+    function closeAuthModal() {
+        if (authModal) {
+            authModal.classList.remove('open');
+        }
+    }
+
+    function updateAuthModalState() {
+        const user = window.ObsidianAuth ? window.ObsidianAuth.currentUser : null;
+        const t = translations[currentLang];
+        const profilePicBtns = document.querySelectorAll('#profile-pic-btn, .profile-pic');
+
+        if (user) {
+            if (authLoggedInView) authLoggedInView.style.display = 'block';
+            if (authFormsView) authFormsView.style.display = 'none';
+
+            const authUserDisplayName = document.getElementById('auth-user-display-name');
+            const authUserEmail = document.getElementById('auth-user-email');
+            const authUserAvatar = document.getElementById('auth-user-avatar');
+
+            const name = user.displayName || localStorage.getItem('obsidian_operator_name') || 'Architect';
+            const avatar = localStorage.getItem('obsidian_avatar') || user.photoURL || 'photos/avatar.png';
+
+            if (authUserDisplayName) authUserDisplayName.textContent = name;
+            if (authUserEmail) authUserEmail.textContent = user.email || 'operator@terminal.io';
+            if (authUserAvatar) authUserAvatar.src = avatar;
+
+            if (navSyncIndicator) {
+                navSyncIndicator.classList.remove('offline');
+                navSyncIndicator.title = t.status_synced;
+            }
+            if (navAuthLabel) {
+                navAuthLabel.textContent = name.split(' ')[0] || t.btn_account;
+            }
+
+            // Reveal profile photo in top navigation bar
+            profilePicBtns.forEach(btn => {
+                btn.style.display = 'flex';
+                btn.classList.add('logged-in');
+            });
+        } else {
+            if (authLoggedInView) authLoggedInView.style.display = 'none';
+            if (authFormsView) authFormsView.style.display = 'block';
+
+            if (navSyncIndicator) {
+                navSyncIndicator.classList.add('offline');
+                navSyncIndicator.title = t.status_guest;
+            }
+            if (navAuthLabel) {
+                navAuthLabel.textContent = t.btn_signin_cloud;
+            }
+
+            // Hide profile photo when not authenticated
+            profilePicBtns.forEach(btn => {
+                btn.style.display = 'none';
+                btn.classList.remove('logged-in');
+            });
+        }
+    }
+
+    if (authModalBtn) authModalBtn.addEventListener('click', openAuthModal);
+    if (authModalClose) authModalClose.addEventListener('click', closeAuthModal);
+    if (authCancelBtn) authCancelBtn.addEventListener('click', closeAuthModal);
+    if (authModal) {
+        authModal.addEventListener('click', (e) => {
+            if (e.target === authModal) closeAuthModal();
+        });
+    }
+
+    if (authTabLogin) authTabLogin.addEventListener('click', () => setAuthMode('login'));
+    if (authTabRegister) authTabRegister.addEventListener('click', () => setAuthMode('register'));
+    if (authToggleActionBtn) {
+        authToggleActionBtn.addEventListener('click', () => {
+            setAuthMode(currentAuthMode === 'login' ? 'register' : 'login');
+        });
+    }
+
+    // Auth Error Sanitizer & Localizer
+    function getFriendlyAuthError(err) {
+        const t = translations[currentLang];
+        const msg = (err && err.code) || (err && err.message) || '';
+        if (msg.includes('invalid-credential') || msg.includes('user-not-found') || msg.includes('wrong-password')) {
+            return t.toast_auth_user_not_found;
+        }
+        if (msg.includes('email-already-in-use')) {
+            return t.toast_auth_email_in_use;
+        }
+        if (msg.includes('weak-password')) {
+            return t.toast_auth_weak_pass;
+        }
+        if (msg.includes('invalid-email')) {
+            return t.toast_auth_invalid_email;
+        }
+        return t.toast_auth_error;
+    }
+
+    // Google Sign In
+    if (btnGoogleAuth) {
+        btnGoogleAuth.addEventListener('click', async () => {
+            const t = translations[currentLang];
+            try {
+                btnGoogleAuth.disabled = true;
+                btnGoogleAuth.style.opacity = '0.7';
+                const res = await window.ObsidianAuth.signInWithGoogle();
+                if (res && (res.uid || res.user)) {
+                    showToast(t.toast_auth_signin_ok);
+                    closeAuthModal();
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(getFriendlyAuthError(err), true);
+            } finally {
+                btnGoogleAuth.disabled = false;
+                btnGoogleAuth.style.opacity = '1';
+            }
+        });
+    }
+
+    // Email / Password Form Submit (Register or Login)
+    if (authEmailForm) {
+        authEmailForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const t = translations[currentLang];
+            const emailInput = document.getElementById('auth-input-email');
+            const passInput = document.getElementById('auth-input-password');
+            const nameInput = document.getElementById('auth-input-name');
+
+            const email = emailInput ? emailInput.value.trim() : '';
+            const password = passInput ? passInput.value : '';
+            const name = nameInput ? nameInput.value.trim() : '';
+
+            // Input Validation Checks
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!email || !emailRegex.test(email)) {
+                showToast(t.toast_auth_invalid_email, true);
+                if (emailInput) emailInput.focus();
+                return;
+            }
+
+            if (!password || password.length < 6) {
+                showToast(t.toast_auth_weak_pass, true);
+                if (passInput) passInput.focus();
+                return;
+            }
+
+            try {
+                if (authSubmitBtn) {
+                    authSubmitBtn.disabled = true;
+                    authSubmitBtn.textContent = '...';
+                }
+
+                if (currentAuthMode === 'register') {
+                    const res = await window.ObsidianAuth.registerWithEmail(email, password, name || 'Architect');
+                    if (res) {
+                        showToast(t.toast_auth_register_ok);
+                        closeAuthModal();
+                    }
+                } else {
+                    const res = await window.ObsidianAuth.signInWithEmail(email, password);
+                    if (res) {
+                        showToast(t.toast_auth_signin_ok);
+                        closeAuthModal();
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+                showToast(getFriendlyAuthError(err), true);
+            } finally {
+                if (authSubmitBtn) {
+                    authSubmitBtn.disabled = false;
+                    authSubmitBtn.textContent = currentAuthMode === 'login' ? t.btn_signin : t.btn_register;
+                }
+            }
+        });
+    }
+
+    // Sign Out
+    if (btnAuthSignout) {
+        btnAuthSignout.addEventListener('click', async () => {
+            const t = translations[currentLang];
+            try {
+                await window.ObsidianAuth.signOut();
+                showToast(t.toast_auth_signout_ok);
+                closeAuthModal();
+            } catch (err) {
+                console.error(err);
+                showToast(err.message || 'Error signing out', true);
+            }
+        });
+    }
+
+    // Listen to Security Session Timeout
+    window.addEventListener('obsidian-session-timeout', () => {
+        const t = translations[currentLang];
+        showToast(t.toast_session_timeout || 'Session timed out due to inactivity.', true);
+        updateAuthModalState();
+    });
+
+    // Listen to Firebase Auth & Cloud Data Events from firebase-sync.js
+    window.addEventListener('obsidian-auth-state-changed', (e) => {
+        updateAuthModalState();
+        updateAvatarImages();
+        updateOperatorGreeting();
+    });
+
+    window.addEventListener('obsidian-cloud-data-synced', (e) => {
+        const { classes, tasks } = e.detail || {};
+        if (classes) {
+            localStorage.setItem('obsidianClasses', JSON.stringify(classes));
+        }
+        if (tasks) {
+            localStorage.setItem('obsidianTasks', JSON.stringify(tasks));
+        }
+        renderClassesList();
+        renderTasksList();
+        renderDashboardSchedule();
+        renderPriorityTasks();
+        renderNotifications();
+        updateProgressMetrics();
+        updateDashboardCounters();
+    });
+
     // Initial Engine Trigger
     setLanguage(currentLang);
     updateAvatarImages();
     updateOperatorGreeting();
+    updateAuthModalState();
 });

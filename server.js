@@ -8,7 +8,15 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
-app.use(express.json());
+// Security & MIME-type hardening middleware
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  next();
+});
+
+app.use(express.json({ limit: '1mb' }));
 app.use('/photos', express.static(path.join(__dirname, 'photos')));
 app.use(express.static(__dirname, {
   setHeaders: (res, filePath) => {
@@ -29,6 +37,11 @@ app.get('/style.css', (req, res) => {
 app.get('/website.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
   res.sendFile(path.join(__dirname, 'website.js'));
+});
+
+app.get('/firebase-sync.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+  res.sendFile(path.join(__dirname, 'firebase-sync.js'));
 });
 
 // Discord Webhook Proxy Endpoint
