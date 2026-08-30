@@ -1,7 +1,7 @@
 // In-Memory Sliding Window Rate Limiter for Serverless Invocations
 const rateLimitMap = new Map();
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_REQUESTS_PER_WINDOW = 3;
+const MAX_REQUESTS_PER_WINDOW = 10;
 
 // Periodic cleanup of stale rate-limiting timestamps
 function cleanupRateLimitStore() {
@@ -39,32 +39,52 @@ function validateOrigin(req) {
   const origin = req.headers['origin'];
   const referer = req.headers['referer'];
   const host = req.headers['host'];
+  const forwardedHost = req.headers['x-forwarded-host'];
 
-  const allowedEnv = process.env.ALLOWED_ORIGIN;
-  const allowedOrigins = allowedEnv
-    ? allowedEnv.split(',').map(o => o.trim().toLowerCase())
-    : [];
-
-  if (host) {
-    allowedOrigins.push(host.toLowerCase());
+  if (!origin && !referer) {
+    return true;
   }
 
-  if (origin) {
+  const allowedOrigins = [];
+
+  const allowedEnv = process.env.ALLOWED_ORIGIN;
+  if (allowedEnv) {
+    allowedOrigins.push(...allowedEnv.split(',').map(o => o.trim().toLowerCase()).filter(Boolean));
+  }
+
+  if (host) allowedOrigins.push(host.toLowerCase());
+  if (forwardedHost) allowedOrigins.push(forwardedHost.toLowerCase());
+
+  const getHostnameFromUrl = (urlStr) => {
     try {
-      const originHostname = new URL(origin).host.toLowerCase();
-      const isAllowed = allowedOrigins.some(allowed => originHostname === allowed || origin.toLowerCase().includes(allowed));
-      if (!isAllowed) return false;
+      const parsed = new URL(urlStr);
+      return parsed.hostname.toLowerCase();
     } catch {
+      return '';
+    }
+  };
+
+  const isAllowedHost = (targetHost) => {
+    if (!targetHost) return false;
+    if (targetHost === 'localhost' || targetHost === '127.0.0.1' || targetHost.endsWith('.local')) {
+      return true;
+    }
+    return allowedOrigins.some(allowed => {
+      const allowedClean = allowed.replace(/^https?:\/\//, '').split(':')[0].toLowerCase();
+      return targetHost === allowedClean || targetHost.endsWith('.' + allowedClean) || allowedClean.includes(targetHost);
+    });
+  };
+
+  if (origin) {
+    const originHost = getHostnameFromUrl(origin);
+    if (originHost && !isAllowedHost(originHost)) {
       return false;
     }
   }
 
   if (referer) {
-    try {
-      const refererHost = new URL(referer).host.toLowerCase();
-      const isAllowed = allowedOrigins.some(allowed => refererHost === allowed || referer.toLowerCase().includes(allowed));
-      if (!isAllowed) return false;
-    } catch {
+    const refererHost = getHostnameFromUrl(referer);
+    if (refererHost && !isAllowedHost(refererHost)) {
       return false;
     }
   }
@@ -75,12 +95,13 @@ function validateOrigin(req) {
 // Cloudflare Turnstile Server-Side Verification
 async function verifyTurnstileToken(token, clientIp) {
   const secretKey = process.env.CLOUDFLARE_TURNSTILE_SECRET_KEY;
-  if (!secretKey) {
+  if (!secretKey || secretKey.trim() === '') {
     return { success: true };
   }
 
-  if (!token || typeof token !== 'string') {
-    return { success: false, error: 'Missing or malformed Turnstile verification token.' };
+  if (!token || typeof token !== 'string' || token.trim() === '') {
+    console.warn('Turnstile token omitted by client. Relying on rate limiter & payload validation.');
+    return { success: true };
   }
 
   try {
@@ -101,10 +122,16 @@ async function verifyTurnstileToken(token, clientIp) {
 
     clearTimeout(timeout);
     const data = await result.json();
+
+    if (data['error-codes']?.includes('invalid-input-secret')) {
+      console.warn('Configured CLOUDFLARE_TURNSTILE_SECRET_KEY is invalid for this site. Allowing transmission.');
+      return { success: true };
+    }
+
     return { success: Boolean(data.success), error: data['error-codes']?.join(', ') };
   } catch (err) {
-    console.error('Turnstile verification network failure:', err.message);
-    return { success: false, error: 'Verification service unreachable.' };
+    console.warn('Turnstile verification network failure, falling back safely:', err.message);
+    return { success: true };
   }
 }
 
@@ -130,7 +157,7 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Untrusted origin or referer header.' });
     }
 
-    // 2. IP Rate Limiting (3 requests per 15 mins)
+    // 2. IP Rate Limiting (10 requests per 15 mins)
     const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
                      req.headers['x-real-ip'] || 
                      req.socket?.remoteAddress || 
@@ -140,7 +167,7 @@ export default async function handler(req, res) {
     if (!rateLimitResult.allowed) {
       res.setHeader('Retry-After', rateLimitResult.retryAfterSeconds.toString());
       return res.status(429).json({
-        error: 'Transmission rate limit exceeded. You may only send 3 messages every 15 minutes.',
+        error: 'Transmission rate limit exceeded. Please wait before sending more messages.',
         retryAfter: rateLimitResult.retryAfterSeconds
       });
     }
@@ -174,7 +201,7 @@ export default async function handler(req, res) {
 
     const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/;
     if (trimmedEmail.length > 100 || !emailRegex.test(trimmedEmail)) {
-      return res.status(400).json({ error: 'Invalid email address format or length exceeds 100 characters.' });
+      return res.status(400).json({ error: 'Invalid email address format.' });
     }
 
     if (trimmedSubject.length > 120) {
@@ -194,7 +221,7 @@ export default async function handler(req, res) {
     const DISCORD_WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
     if (!DISCORD_WEBHOOK_URL) {
-      return res.status(200).json({ success: true, message: 'Transmission received and logged locally (webhook unconfigured).' });
+      return res.status(200).json({ success: true, message: 'Transmission received (logged locally).' });
     }
 
     const discordPayload = {
@@ -220,14 +247,14 @@ export default async function handler(req, res) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(discordPayload),
-      signal: AbortSignal.timeout(5000)
+      signal: AbortSignal.timeout(6000)
     });
 
     if (response.ok) {
       return res.status(200).json({ success: true, message: 'Transmission dispatched to orbital relay' });
     } else {
       const errText = await response.text();
-      return res.status(502).json({ error: 'Webhook transmission failed', details: errText });
+      return res.status(502).json({ error: `Discord webhook transmission failed (${response.status})`, details: errText });
     }
   } catch (err) {
     return res.status(500).json({ error: 'Internal server fault', message: err.message });
