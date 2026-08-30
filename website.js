@@ -1997,9 +1997,14 @@ document.addEventListener('DOMContentLoaded', () => {
     function getFriendlyAuthError(err) {
         const t = translations[currentLang];
         const msg = ((err && err.code) || (err && err.message) || '').toLowerCase();
-        
+        const currentHost = window.location.hostname || 'localhost';
+        const isExternalHost = currentHost.includes('vercel.app') || 
+                               currentHost.includes('github.io') || 
+                               (currentHost !== 'localhost' && currentHost !== '127.0.0.1' && !currentHost.includes('.run.app'));
+
+        const domainNotice = document.getElementById('auth-domain-notice');
+
         if (msg.includes('unauthorized-domain')) {
-            const domainNotice = document.getElementById('auth-domain-notice');
             if (domainNotice) domainNotice.classList.remove('hidden');
             return t.toast_auth_unauthorized_domain;
         }
@@ -2010,6 +2015,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return t.toast_auth_popup_blocked;
         }
         if (msg.includes('popup-closed-by-user') || msg.includes('cancelled-popup-request')) {
+            if (isExternalHost && domainNotice) {
+                domainNotice.classList.remove('hidden');
+            }
             return t.toast_auth_popup_closed;
         }
         return (err && err.message) || t.toast_auth_error;
@@ -2135,6 +2143,74 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // Email / Password & Magic Link Handlers
+    const btnEmailSignin = document.getElementById('btn-email-signin');
+    const btnEmailSignup = document.getElementById('btn-email-signup');
+    const btnMagicLink = document.getElementById('btn-magic-link');
+    const authEmailInput = document.getElementById('auth-email-input');
+    const authPasswordInput = document.getElementById('auth-password-input');
+
+    if (btnEmailSignin) {
+        btnEmailSignin.addEventListener('click', async () => {
+            const email = authEmailInput ? authEmailInput.value.trim() : '';
+            const password = authPasswordInput ? authPasswordInput.value.trim() : '';
+            if (!email || !password) {
+                showToast('Please enter both email and password.', true);
+                return;
+            }
+            try {
+                btnEmailSignin.disabled = true;
+                await window.ObsidianAuth.signInWithEmail(email, password);
+                showToast('Signed in successfully!');
+                closeAuthModal();
+            } catch (err) {
+                showToast(err.message || 'Failed to sign in', true);
+            } finally {
+                btnEmailSignin.disabled = false;
+            }
+        });
+    }
+
+    if (btnEmailSignup) {
+        btnEmailSignup.addEventListener('click', async () => {
+            const email = authEmailInput ? authEmailInput.value.trim() : '';
+            const password = authPasswordInput ? authPasswordInput.value.trim() : '';
+            if (!email || !password) {
+                showToast('Please enter both email and password.', true);
+                return;
+            }
+            try {
+                btnEmailSignup.disabled = true;
+                await window.ObsidianAuth.signUpWithEmail(email, password);
+                showToast('Account created! Check your email or sign in.');
+                closeAuthModal();
+            } catch (err) {
+                showToast(err.message || 'Failed to create account', true);
+            } finally {
+                btnEmailSignup.disabled = false;
+            }
+        });
+    }
+
+    if (btnMagicLink) {
+        btnMagicLink.addEventListener('click', async () => {
+            const email = authEmailInput ? authEmailInput.value.trim() : '';
+            if (!email) {
+                showToast('Please enter your email address first.', true);
+                return;
+            }
+            try {
+                btnMagicLink.disabled = true;
+                await window.ObsidianAuth.sendMagicLink(email);
+                showToast('Magic link sent to your email!');
+            } catch (err) {
+                showToast(err.message || 'Failed to send magic link', true);
+            } finally {
+                btnMagicLink.disabled = false;
+            }
+        });
+    }
+
     // Sign Out
     if (btnAuthSignout) {
         btnAuthSignout.addEventListener('click', async () => {
@@ -2178,6 +2254,18 @@ document.addEventListener('DOMContentLoaded', () => {
     // Listen to Firebase Auth & Cloud Data Events from firebase-sync.js
     window.addEventListener('obsidian-auth-state-changed', (e) => {
         refreshAllViews();
+    });
+
+    window.addEventListener('obsidian-auth-redirect-success', () => {
+        const t = translations[currentLang];
+        showToast(t.toast_auth_signin_ok);
+        closeAuthModal();
+        refreshAllViews();
+    });
+
+    window.addEventListener('obsidian-auth-redirect-error', (e) => {
+        const err = e.detail && e.detail.error;
+        showToast(getFriendlyAuthError(err), true);
     });
 
     window.addEventListener('obsidian-data-updated', () => {
