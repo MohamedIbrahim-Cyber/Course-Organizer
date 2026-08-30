@@ -2164,7 +2164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Signed in successfully!');
                 closeAuthModal();
             } catch (err) {
-                showToast(err.message || 'Failed to sign in', true);
+                showToast(getFriendlyAuthError(err), true);
             } finally {
                 btnEmailSignin.disabled = false;
             }
@@ -2185,7 +2185,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showToast('Account created! Check your email or sign in.');
                 closeAuthModal();
             } catch (err) {
-                showToast(err.message || 'Failed to create account', true);
+                showToast(getFriendlyAuthError(err), true);
             } finally {
                 btnEmailSignup.disabled = false;
             }
@@ -2204,7 +2204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await window.ObsidianAuth.sendMagicLink(email);
                 showToast('Magic link sent to your email!');
             } catch (err) {
-                showToast(err.message || 'Failed to send magic link', true);
+                showToast(getFriendlyAuthError(err), true);
             } finally {
                 btnMagicLink.disabled = false;
             }
