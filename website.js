@@ -7,14 +7,21 @@ if (!window.ObsidianAuth) {
             return new Promise((resolve, reject) => {
                 if (window.ObsidianAuth._isReal) return resolve(window.ObsidianAuth);
                 let attempts = 0;
+                let shownNotice = false;
                 const interval = setInterval(() => {
                     attempts++;
                     if (window.ObsidianAuth._isReal) {
                         clearInterval(interval);
                         resolve(window.ObsidianAuth);
-                    } else if (attempts > 100) { // 10 seconds
-                        clearInterval(interval);
-                        reject(new Error("Authentication module is taking longer than expected to load. Please check your network connection and try again."));
+                    } else {
+                        if (attempts > 15 && !shownNotice && typeof showToast === 'function') {
+                            shownNotice = true;
+                            showToast("Connecting to Firebase authentication services...");
+                        }
+                        if (attempts > 600) { // 60 seconds
+                            clearInterval(interval);
+                            reject(new Error("Authentication module connection timed out. Please refresh the page."));
+                        }
                     }
                 }, 100);
             });
